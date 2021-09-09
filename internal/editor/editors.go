@@ -1,8 +1,9 @@
 package editor
 
 var editors = map[string][]string{
-	"vim":     {"vim"},
-	"nvim":    {"nvim"},
+	// Temporarily removed term-based editors for open issues
+	// "vim":     {"vim"},
+	// "nvim":    {"nvim"},
 	"eclipse": {"eclipse --launcher.openFile"},
 	// MS
 	"atom":   {"atom"},

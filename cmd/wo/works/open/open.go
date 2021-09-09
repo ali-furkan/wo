@@ -73,5 +73,11 @@ func openWork(opts *OpenOpts) error {
 		}
 	}
 
+	if len(*editors) > 0 {
+		e := (*editors)[0]
+
+		return editor.OpenEditor(e, work.Path)
+	}
+
 	return errors.New("open work failed: unknown editor")
 }
