@@ -3,7 +3,6 @@
     <p><strong>Easily manage your work via command line</strong></p>
 </div>
 
-
 ## Introduction
 
 Wo, is cli that provides it easy to manage your workspace. Wo provides to manipulating workflows,
@@ -15,6 +14,7 @@ See [documentation](docs/get_started.md) for more information
 - [ ] Authentication github, gitlab... (for clone repo etc.)
 - [ ] Add rc of wo file handler
 - [ ] Add Work Scripts & cycle scripts
+- [ ] Use bubbletea for create work
 - [ ] Signed releases
 
 If you want to see more features at wo feel free to [contribute](#Contributing)!
