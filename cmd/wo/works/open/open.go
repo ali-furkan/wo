@@ -47,16 +47,16 @@ func NewCmdOpen(cfg *config.Config) *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&opts.WorkName, "name", "n", "", "Work name to operate on")
-	cmd.Flags().StringVarP(&opts.SelectedEditor, "editor", "e", cfg.Workspace().DefaultEditor, "Open work with specified editor")
+	cmd.Flags().StringVarP(&opts.SelectedEditor, "editor", "e", cfg.Config().Workspace.DefaultEditor, "Open work with specified editor")
 
 	return cmd
 }
 
 func openWork(opts *OpenOpts) error {
-	editors := opts.Config.Editors(nil)
+	editors := opts.Config.Config().Editors
 	var work *workspace.Work
 
-	for _, w := range opts.Config.Workspace().Works {
+	for _, w := range opts.Config.Config().Workspace.Works {
 		if w.Name == opts.WorkName {
 			work = &w
 			break
@@ -67,16 +67,14 @@ func openWork(opts *OpenOpts) error {
 		return errors.New("open work failed: unknown work")
 	}
 
-	for _, e := range *editors {
+	for _, e := range editors {
 		if e.Name == opts.SelectedEditor {
 			return editor.OpenEditor(e, work.Path)
 		}
 	}
 
-	if len(*editors) > 0 {
-		e := (*editors)[0]
-
-		return editor.OpenEditor(e, work.Path)
+	if len(editors) > 0 {
+		return editor.OpenEditor(editors[0], work.Path)
 	}
 
 	return errors.New("open work failed: unknown editor")

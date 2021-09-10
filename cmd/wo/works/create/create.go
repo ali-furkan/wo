@@ -57,18 +57,22 @@ func NewCmdCreate(cfg *config.Config) *cobra.Command {
 				opts.Name = filepath.Base(path)
 			}
 
-			if !filepath.IsAbs(path) && strings.HasPrefix(path, ".") {
+			if !filepath.IsAbs(path) && (strings.HasPrefix(path, ".") || cfg.Config().Workspace.WorkDir == "") {
 				d, err := os.Getwd()
 				if err != nil {
 					return err
 				}
 
 				path = filepath.Join(d, path)
-			} else if !filepath.IsAbs(path) && cfg.Workspace().WorkDir != "" {
-				path = filepath.Join(cfg.Workspace().WorkDir, path)
+			} else if (!filepath.IsAbs(path) && cfg.Config().Workspace.WorkDir != "") || opts.Internal {
+				path = filepath.Join(cfg.Config().Workspace.WorkDir, path)
 			}
 
 			opts.Path = filepath.Clean(path)
+			if !strings.HasSuffix(opts.Path, "/") {
+				opts.Path += "/"
+			}
+
 			return createWork(opts)
 		},
 	}
@@ -76,8 +80,8 @@ func NewCmdCreate(cfg *config.Config) *cobra.Command {
 	cmd.Flags().BoolVarP(&opts.ConfirmSubmit, "confirm", "y", false, "Skip the confirmation prompt")
 	cmd.Flags().StringVarP(&opts.Name, "name", "n", "", "Name of the work")
 	cmd.Flags().StringVar(&opts.Description, "description", "", "Description of the work")
-	cmd.Flags().BoolVar(&opts.Git, "git", cfg.Workspace().DefaultGit, "Init git at work")
-	cmd.Flags().BoolVar(&opts.Readme, "readme", cfg.Workspace().DefaultReadme, "Create readme at folder of work")
+	cmd.Flags().BoolVar(&opts.Git, "git", cfg.Config().Workspace.DefaultGit, "Init git at work")
+	cmd.Flags().BoolVar(&opts.Readme, "readme", cfg.Config().Workspace.DefaultReadme, "Create readme at folder of work")
 	cmd.Flags().BoolVar(&opts.Internal, "internal", false, "Create work to workspace dir")
 	cmd.Flags().BoolVar(&opts.Temporary, "temporary", false, "Create work to temporary dir")
 	cmd.Flags().StringVar(&opts.Template, "template", "", "Install work with template")
@@ -87,7 +91,7 @@ func NewCmdCreate(cfg *config.Config) *cobra.Command {
 }
 
 func createWork(opts *CreateOpts) error {
-	for _, w := range opts.Config.Workspace().Works {
+	for _, w := range opts.Config.Config().Workspace.Works {
 		if w.Name == opts.Name {
 			errTxt := fmt.Sprintf("%s work already exists", w.Name)
 			return errors.New(errTxt)
@@ -116,6 +120,8 @@ func createWork(opts *CreateOpts) error {
 		Path:        opts.Path,
 		License:     opts.LicenseTemplate,
 		Type:        workType,
+		InitGit:     opts.Git,
+		InitReadme:  opts.Readme,
 		CreatedAt:   t,
 		UpdatedAt:   t,
 	}
@@ -127,7 +133,7 @@ func createWork(opts *CreateOpts) error {
 
 	workspace.PrintTinyStat(work)
 
-	opts.Config.Workspace().Works = append(opts.Config.Workspace().Works, work)
+	opts.Config.Config().Workspace.Works = append(opts.Config.Config().Workspace.Works, work)
 
 	return nil
 }

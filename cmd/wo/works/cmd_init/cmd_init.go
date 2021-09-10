@@ -73,15 +73,15 @@ func NewCmdInit(cfg *config.Config) *cobra.Command {
 	cmd.Flags().BoolVarP(&opts.ConfirmSubmit, "confirm", "y", false, "SKip the confirmation prompt")
 	cmd.Flags().StringVarP(&opts.Name, "name", "n", "", "Name of the work")
 	cmd.Flags().StringVar(&opts.Description, "description", "", "Description of the work")
-	cmd.Flags().BoolVar(&opts.Git, "git", cfg.Workspace().DefaultGit, "Init git at work")
-	cmd.Flags().BoolVar(&opts.Readme, "readme", cfg.Workspace().DefaultReadme, "Create readme at folder of work")
+	cmd.Flags().BoolVar(&opts.Git, "git", cfg.Config().Workspace.DefaultGit, "Init git at work")
+	cmd.Flags().BoolVar(&opts.Readme, "readme", cfg.Config().Workspace.DefaultReadme, "Create readme at folder of work")
 	cmd.Flags().StringVarP(&opts.LicenseTemplate, "license", "l", "", "Specify SPDX License for work (SPDX ID)")
 
 	return cmd
 }
 
 func initWork(opts *InitOpts) error {
-	for _, w := range opts.Config.Workspace().Works {
+	for _, w := range opts.Config.Config().Workspace.Works {
 		if w.Name == opts.Name {
 			errTxt := fmt.Sprintf("%s work already exists", w.Name)
 			return errors.New(errTxt)
@@ -112,7 +112,7 @@ func initWork(opts *InitOpts) error {
 
 	workspace.PrintTinyStat(work)
 
-	opts.Config.Workspace().Works = append(opts.Config.Workspace().Works, work)
+	opts.Config.Config().Workspace.Works = append(opts.Config.Config().Workspace.Works, work)
 
 	return nil
 }

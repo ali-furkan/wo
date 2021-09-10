@@ -5,9 +5,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ali-furkan/wo/internal/auth"
-	"github.com/ali-furkan/wo/internal/editor"
-	"github.com/ali-furkan/wo/internal/workspace"
 	"github.com/mitchellh/go-homedir"
 	"gopkg.in/yaml.v2"
 )
@@ -89,35 +86,11 @@ func (c *Config) Reset() error {
 	return c.Write()
 }
 
-// Auth function gets authentication data in configuration files/env(?)
-func (c *Config) Auth(key string) *auth.Auth {
+// Config function gets loaded configuration data
+func (c *Config) Config() *ConfigFile {
 	if c.configFile == nil {
 		return nil
 	}
 
-	authConfig := c.configFile.Auth[key]
-
-	return &authConfig
-}
-
-// Works function gets all of saved works in configuration files/env(?)
-func (c *Config) Workspace() *workspace.Workspace {
-	if c.configFile == nil {
-		return nil
-	}
-
-	return &c.configFile.Workspace
-}
-
-// Editors function gets editors in configuration files/env(?)
-func (c *Config) Editors(initEditor *[]editor.Editor) *[]editor.Editor {
-	if initEditor != nil {
-		c.configFile.Editors = *initEditor
-	}
-
-	if c.configFile == nil {
-		return nil
-	}
-
-	return &c.configFile.Editors
+	return c.configFile
 }

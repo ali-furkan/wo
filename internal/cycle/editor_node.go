@@ -17,7 +17,7 @@ func NewNodeEditor() *CycleNode {
 }
 
 func scanEditor(cfg *config.Config) error {
-	if time.Since(cfg.Workspace().LastScanEditor) < 1 {
+	if time.Since(cfg.Config().Workspace.LastScanEditor) < 1 {
 		return nil
 	}
 
@@ -26,10 +26,10 @@ func scanEditor(cfg *config.Config) error {
 		return err
 	}
 
-	e := cfg.Editors(nil)
+	e := &cfg.Config().Editors
 	if len(ne) != len(*e) {
-		cfg.Editors(&ne)
-		cfg.Workspace().LastScanEditor = time.Now()
+		e = &ne
+		cfg.Config().Workspace.LastScanEditor = time.Now()
 	}
 
 	return nil

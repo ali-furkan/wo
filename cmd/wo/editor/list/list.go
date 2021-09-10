@@ -31,15 +31,22 @@ func NewCmdSetEditor(cfg *config.Config) *cobra.Command {
 }
 
 func listEditors(cfg *config.Config) error {
-	editors := cfg.Editors(nil)
-	if len(*editors) == 0 {
+	editors := cfg.Config().Editors
+	if len(editors) == 0 {
 		return errors.New(ErrNotFoundEditor)
 	}
 
-	res := ""
+	res := fmt.Sprintf("Showing %d list of edit\n\n", len(editors))
 
-	for _, e := range *editors {
-		res += fmt.Sprintf("%s - %s\n", e.Name, e.Exec)
+	def_editor := cfg.Config().Workspace.DefaultEditor
+
+	for _, e := range editors {
+		res += fmt.Sprintf("%s - %s", e.Name, e.Exec)
+		if e.Name == def_editor {
+			res += fmt.Sprintln(" 'current editor'")
+		} else {
+			res += "\n"
+		}
 	}
 
 	fmt.Println(res)

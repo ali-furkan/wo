@@ -32,7 +32,7 @@ func NewCmdOpen(cfg *config.Config) *cobra.Command {
 		Long:  CmdLongDesc,
 		Args:  cobra.MaximumNArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.SelectedEditor = cfg.Workspace().DefaultEditor
+			opts.SelectedEditor = cfg.Config().Workspace.DefaultEditor
 			if len(args) > 0 {
 				opts.SelectedEditor = args[0]
 			}
@@ -48,9 +48,9 @@ func NewCmdOpen(cfg *config.Config) *cobra.Command {
 }
 
 func openEditor(opts *OpenOpts) error {
-	editors := opts.Config.Editors(nil)
+	editors := opts.Config.Config().Editors
 
-	for _, e := range *editors {
+	for _, e := range editors {
 		if e.Name == opts.SelectedEditor {
 			return editor.OpenEditor(e, opts.Path)
 		}

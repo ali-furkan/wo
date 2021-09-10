@@ -48,7 +48,7 @@ func NewCmdRemove(cfg *config.Config) *cobra.Command {
 }
 
 func removeWork(opts *RemoveOpts) error {
-	works := opts.Config.Workspace().Works
+	works := opts.Config.Config().Workspace.Works
 
 	for i, work := range works {
 		if work.Name == opts.Name {
@@ -58,7 +58,7 @@ func removeWork(opts *RemoveOpts) error {
 			}
 
 			works = append(works[:i], works[i+1:]...)
-			opts.Config.Workspace().Works = works
+			opts.Config.Config().Workspace.Works = works
 			return nil
 		}
 	}

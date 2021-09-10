@@ -41,11 +41,11 @@ func NewCmdSetEditor(cfg *config.Config) *cobra.Command {
 }
 
 func setEditor(opts *SetEditorOpts) error {
-	editors := opts.Config.Editors(nil)
+	c := opts.Config.Config()
 
-	for _, editor := range *editors {
+	for _, editor := range c.Editors {
 		if editor.Name == opts.SelectedEditor {
-			opts.Config.Workspace().DefaultEditor = editor.Name
+			c.Workspace.DefaultEditor = editor.Name
 
 			return nil
 		}

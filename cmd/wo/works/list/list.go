@@ -31,14 +31,14 @@ func NewCmdList(cfg *config.Config) *cobra.Command {
 }
 
 func listWorks(cfg *config.Config) error {
-	if cfg.Workspace() == nil {
+	works := cfg.Config().Workspace.Works
+
+	if len(works) == 0 {
 		return errors.New("works not found")
 	}
 
-	workspace := *cfg.Workspace()
-
 	m := &model{
-		list: workspace.Works,
+		list: works,
 	}
 	p := tea.NewProgram(m)
 
