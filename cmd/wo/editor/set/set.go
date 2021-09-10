@@ -47,6 +47,8 @@ func setEditor(opts *SetEditorOpts) error {
 		if editor.Name == opts.SelectedEditor {
 			c.Workspace.DefaultEditor = editor.Name
 
+			fmt.Printf("\n%s set default editor\n", editor.Name)
+
 			return nil
 		}
 	}
