@@ -20,6 +20,7 @@ import (
 const (
 	WoReleaseURI       = "https://api.github.com/repos/ali-furkan/wo/releases/latest"
 	ErrReleaseNotFound = "release not found"
+	ErrInternetConn    = "get release failure: please check your internet connection"
 )
 
 type ReleaseInfo struct {
@@ -123,11 +124,11 @@ func getStatePath() (string, error) {
 func getLatestReleaseInfo() (latestRelease ReleaseInfo, err error) {
 	res, err := http.Get(WoReleaseURI)
 	if err != nil {
-		err = errors.New("fetch repo failure: please check your internet connection")
+		err = errors.New(ErrInternetConn)
 		return
 	}
 
-	if res.StatusCode == 404 {
+	if res.StatusCode > 399 {
 		err = errors.New(ErrReleaseNotFound)
 		return
 	}
