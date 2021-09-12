@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/MakeNowJust/heredoc"
 )
@@ -99,4 +100,20 @@ func PrintTinyStat(w Work) {
 	`, w.Name, w.Name, fmt.Sprint(w.InitGit), fmt.Sprint(w.InitReadme), w.Path, w.License)
 
 	fmt.Println(stat)
+}
+
+func MoveWork(w *Work, newpath string) error {
+	p := newpath
+	if !filepath.IsAbs(newpath) {
+		d, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+
+		p = filepath.Join(d, newpath)
+	}
+
+	p = filepath.Clean(p)
+
+	return os.Rename(w.Path, p)
 }
