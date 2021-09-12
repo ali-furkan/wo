@@ -63,14 +63,17 @@ func NewCmdInit(cfg *config.Config) *cobra.Command {
 
 			path = filepath.Clean(path)
 
-			opts.Name = filepath.Base(path)
+			if opts.Name == "" {
+				opts.Name = filepath.Base(path)
+			}
+
 			opts.Path = path
 
 			return initWork(opts)
 		},
 	}
 
-	cmd.Flags().BoolVarP(&opts.ConfirmSubmit, "confirm", "y", false, "SKip the confirmation prompt")
+	cmd.Flags().BoolVarP(&opts.ConfirmSubmit, "confirm", "y", false, "Skip the confirmation prompt")
 	cmd.Flags().StringVarP(&opts.Name, "name", "n", "", "Name of the work")
 	cmd.Flags().StringVar(&opts.Description, "description", "", "Description of the work")
 	cmd.Flags().BoolVar(&opts.Git, "git", cfg.Config().Workspace.DefaultGit, "Init git at work")
@@ -101,6 +104,8 @@ func initWork(opts *InitOpts) error {
 		Path:        opts.Path,
 		License:     opts.LicenseTemplate,
 		Type:        workspace.Init,
+		InitGit:     opts.Git,
+		InitReadme:  opts.Readme,
 		CreatedAt:   t,
 		UpdatedAt:   t,
 	}

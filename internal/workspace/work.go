@@ -42,6 +42,12 @@ func CreateWork(w Work) error {
 }
 
 func InitWork(w Work) error {
+	_, err := os.Stat(w.Path)
+	if os.IsNotExist(err) {
+		errStr := fmt.Sprintf("%s: folder doesn't exists", w.Path)
+		return errors.New(errStr)
+	}
+
 	if w.Template != "" {
 		url, err := url.ParseRequestURI(w.Template)
 		if err != nil {
