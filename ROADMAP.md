@@ -4,7 +4,7 @@
 - [ ] Authentication github, gitlab... (for clone repo etc.)
 - [ ] Add rc of wo file handler
 - [ ] Add Work Scripts & cycle scripts
-- [ ] Use bubbletea for create work
+- [ ] Interactive cli commands
 - [ ] Signed releases
 
 If you want to see more features at wo feel free to [contribute](#Contributing)!
