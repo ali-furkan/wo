@@ -30,7 +30,7 @@ func checkUpdatefmt(oldVersion, newVersion, releaseURL string) string {
 
 func checkUpdateCycle(cfg *config.Config) error {
 	releaseInfo, err := update.CheckForUpdate()
-	if err.Error() == update.ErrInternetConn {
+	if err != nil && err.Error() == update.ErrInternetConn {
 		return nil
 	}
 
