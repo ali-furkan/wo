@@ -10,8 +10,9 @@ import (
 )
 
 type Config struct {
-	rootPath   string
-	configFile *ConfigFile
+	rootPath     string
+	configFile   *ConfigFile
+	resourceFile *ResourceFile
 }
 
 // It create new config struct and allocates config file on memory
@@ -31,10 +32,39 @@ func NewConfig() (*Config, error) {
 
 // load provides to alloc the memory and create config file if it doesn't exist
 func (c *Config) load() error {
+	err := c.loadConfig()
+	if err != nil {
+		return err
+	}
+
+	return c.loadResource()
+}
+
+func (c *Config) loadResource() error {
+	dir, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
+	rcPath := filepath.Join(dir, ResourceFileName)
+
+	data, err := ioutil.ReadFile(rcPath)
+	if err != nil && os.IsNotExist(err) {
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	err = yaml.Unmarshal(data, &c.resourceFile)
+
+	return err
+}
+
+func (c *Config) loadConfig() error {
 	configPath := filepath.Join(c.rootPath, "config.yml")
 
 	data, err := ioutil.ReadFile(configPath)
-	if err != nil {
+	if os.IsNotExist(err) {
 		err = os.MkdirAll(c.rootPath, 0755)
 		if err != nil {
 			return err
@@ -59,11 +89,8 @@ func (c *Config) load() error {
 	}
 
 	err = yaml.Unmarshal(data, &c.configFile)
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return err
 }
 
 // Write function config in memory to config file
@@ -93,4 +120,8 @@ func (c *Config) Config() *ConfigFile {
 	}
 
 	return c.configFile
+}
+
+func (c *Config) Resource() *ResourceFile {
+	return c.resourceFile
 }
