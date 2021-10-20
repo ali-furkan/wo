@@ -24,6 +24,7 @@ type RunOpts struct {
 	Name       string
 	WorkingDir string
 	Watch      bool
+	Quiet      bool
 	Args       []string
 	Env        []string
 }
@@ -54,6 +55,7 @@ func NewCmdRun(cfg *config.Config) *cobra.Command {
 	cmd.Flags().StringArrayVar(&opts.Env, "env", []string{}, "Env")
 	cmd.Flags().StringArrayVar(&opts.Args, "args", []string{}, "Args")
 	cmd.Flags().BoolVarP(&opts.Watch, "watch", "w", false, "Restart")
+	cmd.Flags().BoolVarP(&opts.Quiet, "quiet", "q", false, "Quite")
 	cmd.Flags().StringVarP(&opts.WorkingDir, "working-dir", "d", "", "Dir")
 
 	return cmd
@@ -88,5 +90,5 @@ func runWork(opts *RunOpts) error {
 		s.Args = append(s.Args, opts.Args...)
 	}
 
-	return workspace.RunScript(*s)
+	return workspace.RunScript(*s, opts.Quiet)
 }
