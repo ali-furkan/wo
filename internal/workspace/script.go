@@ -5,17 +5,17 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/MakeNowJust/heredoc"
+	"github.com/fatih/color"
 	"github.com/riywo/loginshell"
 )
 
 const (
-	RunScriptFormat = `
+	BeforeRunScriptFormat = `
+		Running %s script
 		$ wo run %s
-		%s
-		%s
-
-		%s
 	`
+	ScriptShowFormat = "$ %s\n"
 )
 
 func RunScript(script Script) error {
@@ -24,13 +24,28 @@ func RunScript(script Script) error {
 		return err
 	}
 
-	cmd := exec.Command(shell, "-c", script.Run, strings.Join(script.Args, " "))
+	color.HiBlack(heredoc.Docf(BeforeRunScriptFormat, script.Name))
 
-	cmd.Env = os.Environ()
-	cmd.Env = append(cmd.Env, script.Env...)
+	for _, childScript := range strings.Split(script.Run, "\n") {
+		if strings.TrimSpace(childScript) == "" {
+			continue
+		}
 
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+		color.HiBlack(ScriptShowFormat, childScript)
 
-	return cmd.Run()
+		cmd := exec.Command(shell, "-c", childScript, strings.Join(script.Args, " "))
+
+		cmd.Env = os.Environ()
+		cmd.Env = append(cmd.Env, script.Env...)
+
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+
+		err := cmd.Run()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
