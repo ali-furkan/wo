@@ -1,6 +1,7 @@
 package workspace
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -29,6 +30,10 @@ func RunScript(script Script) error {
 	for _, childScript := range strings.Split(script.Run, "\n") {
 		if strings.TrimSpace(childScript) == "" {
 			continue
+		}
+
+		if script.Workingdir != "" {
+			childScript = fmt.Sprintf("cd %s && %s", script.Workingdir, childScript)
 		}
 
 		color.HiBlack(ScriptShowFormat, childScript)
