@@ -106,6 +106,33 @@ func (c *Config) Write() error {
 	return ioutil.WriteFile(configPath, data, 0755)
 }
 
+func (c *Config) WriteResourceFile() error {
+	if c.resourceFile == nil {
+		return nil
+	}
+
+	dir, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
+	rcPath := filepath.Join(dir, ResourceFileName)
+
+	_, err = os.ReadFile(rcPath)
+	if err != nil && os.IsNotExist(err) {
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	data, err := yaml.Marshal(c.resourceFile)
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(rcPath, data, 0755)
+}
+
 // Reset function sets value of key as default value
 func (c *Config) Reset() error {
 	c.configFile = defaultConfigFile
