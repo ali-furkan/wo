@@ -39,7 +39,9 @@ func NewCmdRun(cfg *config.Config) *cobra.Command {
 		Long:  CmdLongDesc,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.Name = args[0]
+			if len(args) > 0 {
+				opts.Name = args[0]
+			}
 
 			if len(args) > 1 && len(opts.Args) == 0 {
 				opts.Args = args[1:]

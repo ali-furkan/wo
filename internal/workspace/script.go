@@ -25,7 +25,11 @@ func RunScript(script Script) error {
 		return err
 	}
 
-	color.HiBlack(heredoc.Docf(BeforeRunScriptFormat, script.Name))
+	if script.Name == "" {
+		script.Name = "unknown"
+	}
+
+	color.HiBlack(heredoc.Docf(BeforeRunScriptFormat, script.Name, script.Name))
 
 	for _, childScript := range strings.Split(script.Run, "\n") {
 		if strings.TrimSpace(childScript) == "" {
