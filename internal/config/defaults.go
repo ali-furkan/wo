@@ -17,3 +17,18 @@ var defaultConfigFile = &ConfigFile{
 		Works:          []workspace.Work{},
 	},
 }
+
+const ResourceFileName = ".worc"
+
+var defaultResourceFile = &ResourceFile{
+	Name:        "",
+	Description: "",
+	RunScript:   workspace.Script{},
+	Scripts: []workspace.Script{
+		{
+			Name: "start",
+			Run:  "echo 'hello world'",
+		},
+	},
+	Flows: []workspace.Workflows{},
+}
