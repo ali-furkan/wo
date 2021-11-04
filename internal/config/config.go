@@ -133,6 +133,29 @@ func (c *Config) WriteResourceFile() error {
 	return ioutil.WriteFile(rcPath, data, 0755)
 }
 
+func CreateDefaultRCFile(path string) error {
+	rcPath := filepath.Join(path, ResourceFileName)
+
+	file, err := os.Create(rcPath)
+	if err != nil {
+		return err
+	}
+
+	data, err := yaml.Marshal(defaultResourceFile)
+	if err != nil {
+		return err
+	}
+
+	_, err = file.Write(data)
+	if err != nil {
+		return err
+	}
+
+	file.Close()
+
+	return nil
+}
+
 // Reset function sets value of key as default value
 func (c *Config) Reset() error {
 	c.configFile = defaultConfigFile

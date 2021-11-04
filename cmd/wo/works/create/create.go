@@ -29,6 +29,7 @@ type CreateOpts struct {
 	Description       string
 	Git               bool
 	Readme            bool
+	RCFile            bool
 	Internal          bool
 	Temporary         bool
 	ConfirmSubmit     bool
@@ -84,6 +85,7 @@ func NewCmdCreate(cfg *config.Config) *cobra.Command {
 	cmd.Flags().BoolVar(&opts.Readme, "readme", cfg.Config().Workspace.DefaultReadme, "Create readme at folder of work")
 	cmd.Flags().BoolVar(&opts.Internal, "internal", false, "Create work to workspace dir")
 	cmd.Flags().BoolVar(&opts.Temporary, "temporary", false, "Create work to temporary dir")
+	cmd.Flags().BoolVar(&opts.RCFile, "rc", cfg.Config().Workspace.DefaultRc, "Create resource file for your work")
 	cmd.Flags().StringVar(&opts.Template, "template", "", "Install work with template")
 	cmd.Flags().StringVarP(&opts.LicenseTemplate, "license", "l", "", "Specify SPDX License for work (SPDX ID)")
 
@@ -129,6 +131,13 @@ func createWork(opts *CreateOpts) error {
 	err := workspace.CreateWork(work)
 	if err != nil {
 		return err
+	}
+	fmt.Println(opts.RCFile)
+	if opts.RCFile {
+		err := config.CreateDefaultRCFile(opts.Path)
+		if err != nil {
+			return err
+		}
 	}
 
 	workspace.PrintTinyStat(work)
