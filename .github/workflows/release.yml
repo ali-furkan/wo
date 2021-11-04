@@ -1,0 +1,60 @@
+name: Wo Release
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: 
+      - name: Build Wo for release
+        run: |
+          make release_build
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: binaries
+          path: "./bin"
+  release:
+    name: "Wo Release"
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: jungwinter/split@v1
+        id: split
+        with: 
+          msg: ${{ github.ref }}
+          seperator: /
+      - name: Create Release
+        run: |
+          gh release create --draft $tag
+        env:
+          tag: ${{ steps.split.outputs._2 }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: release-drafter/release-drafter@v5
+  upload_builds:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: jungwinter/split@v1
+        id: split
+        with: 
+          msg: ${{ github.ref }}
+          seperator: /
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: binaries
+          path: ./bin
+      - name: "Package Binaries"
+        run: |
+          make package
+      - name: "Upload Binaries"
+        run: |
+          ./build/get-builds.sh | gh release upload $tag
+        env:
+          tag: ${{ steps.split.outputs._2 }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,24 @@
+name: "Code Scanning (weekly)"
+
+on:
+  schedule:
+    - cron: "0 15 * * 0"
+  workflow_dispatch:
+
+jobs:
+  codeql-build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v2
+    
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: go
+    
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v1
+    
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
