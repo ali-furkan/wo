@@ -10,6 +10,7 @@ var defaultConfigFile = &ConfigFile{
 	Workspace: workspace.Workspace{
 		DefaultEditor:  "",
 		DefaultReadme:  true,
+		DefaultRc:      true,
 		DefaultLicense: "",
 		TempWorkDir:    "",
 		WorkDir:        "",

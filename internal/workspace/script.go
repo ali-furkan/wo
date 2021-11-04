@@ -42,7 +42,7 @@ func RunScript(script Script, quiet bool) error {
 
 	for n, childScript := range scripts {
 		if !quiet {
-			strScript += fmt.Sprintf("echo \"%s\" &&", color.HiBlackString(ScriptShowFormat, childScript))
+			strScript += fmt.Sprintf(`echo "%s" &&`, color.HiBlackString(ScriptShowFormat, childScript))
 		}
 		strScript += strings.ReplaceAll(childScript, "@args", strArgs)
 		if n != len(scripts)-1 {
@@ -50,7 +50,12 @@ func RunScript(script Script, quiet bool) error {
 		}
 	}
 
-	cmd := exec.Command(shell, "-c", strScript)
+	runOpts := "-c"
+	if strings.HasSuffix(shell, "cmd.exe") {
+		runOpts = "/c"
+	}
+
+	cmd := exec.Command(shell, runOpts, strScript)
 
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, script.Env...)

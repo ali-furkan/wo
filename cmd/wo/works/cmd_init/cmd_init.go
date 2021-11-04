@@ -28,6 +28,7 @@ type InitOpts struct {
 	Path            string
 	Git             bool
 	Readme          bool
+	RCFile          bool
 	ConfirmSubmit   bool
 	LicenseTemplate string
 }
@@ -77,6 +78,7 @@ func NewCmdInit(cfg *config.Config) *cobra.Command {
 	cmd.Flags().StringVarP(&opts.Name, "name", "n", "", "Name of the work")
 	cmd.Flags().StringVar(&opts.Description, "description", "", "Description of the work")
 	cmd.Flags().BoolVar(&opts.Git, "git", cfg.Config().Workspace.DefaultGit, "Init git at work")
+	cmd.Flags().BoolVar(&opts.RCFile, "rc", cfg.Config().Workspace.DefaultRc, "Create resource file for your work")
 	cmd.Flags().BoolVar(&opts.Readme, "readme", cfg.Config().Workspace.DefaultReadme, "Create readme at folder of work")
 	cmd.Flags().StringVarP(&opts.LicenseTemplate, "license", "l", "", "Specify SPDX License for work (SPDX ID)")
 
@@ -113,6 +115,13 @@ func initWork(opts *InitOpts) error {
 	err := workspace.InitWork(work)
 	if err != nil {
 		return err
+	}
+
+	if opts.RCFile {
+		err := config.CreateDefaultRCFile(opts.Path)
+		if err != nil {
+			return err
+		}
 	}
 
 	workspace.PrintTinyStat(work)
