@@ -30,7 +30,21 @@ func GetVersion() string {
 	return version
 }
 
-func ParseVersion(v string) (*Version, error) {
+func (v *Version) String() string {
+	if CurVersion == "" {
+		return "unknown version"
+	}
+
+	version := fmt.Sprintf("v%d.%d.%d", v.Major, v.Minor, v.Patch)
+
+	if CurVersionName != "" {
+		version = fmt.Sprintf("v%s-%s", CurVersion, CurVersionName)
+	}
+
+	return version
+}
+
+func NewVersion(v string) (*Version, error) {
 	reSyntax := regexp.MustCompile("^v([0-9]+).([0-9]+).([0-9]+)(-[a-z]+)*?$")
 	reCatchNumber := regexp.MustCompile("([0-9]+).([0-9]+).([0-9]+)")
 	reCatchName := regexp.MustCompile("([a-z]+)")
@@ -64,8 +78,8 @@ func ParseVersion(v string) (*Version, error) {
 
 func IsGreaterThan(av, bv string) bool {
 
-	aVersion, aErr := ParseVersion(av)
-	bVersion, bErr := ParseVersion(bv)
+	aVersion, aErr := NewVersion(av)
+	bVersion, bErr := NewVersion(bv)
 
 	if aErr != nil || bErr != nil {
 		return false
