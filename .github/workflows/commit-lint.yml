@@ -1,0 +1,15 @@
+name: Lint Commit Messages
+on: [push, pull_request]
+
+
+jobs:
+  codelint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Lint Codes
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: latest

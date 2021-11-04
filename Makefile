@@ -33,8 +33,8 @@ release_build:
 	@GOOS=windows GOARCH=amd64 $(GO) build -o bin/win/wo_amd64.exe
 	@GOOS=windows GOARCH=arm $(GO) build -o bin/win/wo_arm.exe
 
-package: release_build
-	@./build/builder.sh
+package:
+	@./build/package-builder.sh
 
 vendor_install:
 	@$(GO) mod vendor 
