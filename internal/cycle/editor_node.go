@@ -28,7 +28,7 @@ func scanEditor(cfg *config.Config) error {
 
 	e := &cfg.Config().Editors
 	if len(ne) != len(*e) {
-		e = &ne
+		*e = ne
 		cfg.Config().Workspace.LastScanEditor = time.Now()
 	}
 
