@@ -12,7 +12,7 @@ var editors = map[string][]string{
 	"intellij-idea": {"idea64.exe", "idea", "idea.sh"},
 	"webstorm":      {"webstorm.exe", "webstorm", "webstorm.sh"},
 	"pycharm":       {"pycharm.exe", "pycharm", "pycharm.sh"},
-	"goland":        {"golanf.exe", "goland", "goland.sh"},
+	"goland":        {"goland.exe", "goland", "goland.sh"},
 	"phpstorm":      {"phpstorm.exe", "phpstorm", "phpstorm.sh"},
 	"datagrip":      {"datagrip.exe", "datagrip", "datagrip.sh"},
 	"rider":         {"rider.exe", "rider", "rider.sh"},
