@@ -15,7 +15,7 @@ See [ROADMAP](./ROADMAP.md)
 
 ## Installation
 
-- Download suitable binary wo for machine from [here](releases)
+- Download suitable binary wo for machine from [here](https://github.com/ali-furkan/wo/releases)
 - Add your binary wo to path.
 
 Then let's start using wo as following:
