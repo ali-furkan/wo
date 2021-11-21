@@ -74,7 +74,7 @@ func benchmarkFormatString(ver string, b *testing.B) {
 	}
 
 	for n := 0; n < b.N; n++ {
-		v.String()
+		_ = v.String()
 	}
 }
 
