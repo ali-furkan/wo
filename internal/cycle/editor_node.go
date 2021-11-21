@@ -5,11 +5,12 @@ import (
 
 	"github.com/ali-furkan/wo/internal/config"
 	"github.com/ali-furkan/wo/internal/editor"
+	"github.com/ali-furkan/wo/pkg/cycle"
 )
 
-func NewNodeEditor() *CycleNode {
-	cn := NewCycleNode()
-	cn.Type = OnCycleStart
+func NewNodeEditor() *cycle.CycleNode {
+	cn := cycle.NewCycleNode()
+	cn.Type = cycle.OnCycleStart
 
 	cn.AddExe(scanEditor)
 

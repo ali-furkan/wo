@@ -7,13 +7,14 @@ import (
 	"github.com/ali-furkan/wo/internal/config"
 	"github.com/ali-furkan/wo/internal/update"
 	"github.com/ali-furkan/wo/internal/version"
+	"github.com/ali-furkan/wo/pkg/cycle"
 	"github.com/fatih/color"
 )
 
-func NewNodeUpdate() *CycleNode {
-	cn := NewCycleNode()
+func NewNodeUpdate() *cycle.CycleNode {
+	cn := cycle.NewCycleNode()
 
-	cn.Type = OnCycleStart
+	cn.Type = cycle.OnCycleStart
 	cn.AddExe(checkUpdateCycle)
 
 	return cn

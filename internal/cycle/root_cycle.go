@@ -1,9 +1,12 @@
 package cycle
 
-import "github.com/ali-furkan/wo/internal/config"
+import (
+	"github.com/ali-furkan/wo/internal/config"
+	"github.com/ali-furkan/wo/pkg/cycle"
+)
 
-func NewCycleRoot(cfg *config.Config) *Cycle {
-	rootCycle := NewCycle(cfg)
+func NewCycleRoot(cfg *config.Config) *cycle.Cycle {
+	rootCycle := cycle.NewCycle(cfg)
 
 	// nodes
 	rootCycle.AddNode(NewNodeUpdate())
