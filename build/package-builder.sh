@@ -1,12 +1,13 @@
-#!/bin/sh
+#!/bin/bash
 
 set -eu
 
-mkdir releases
+ex_dir="$(dirname "$0")"
+. "$ex_dir/platform-arch.sh"
 
-Release() {
-    echo "Creating '$2'"
-    
+package-binary() {
+    echo "📜 Bundling '$2' binary"
+
     mkdir release
     cd release && mkdir bin && cd ..
 
@@ -16,35 +17,28 @@ Release() {
     cd release
     sudo zip -r ../$2.zip ./
     cd ..
-    sudo rm -fr release
+    sudo rm -rf release
 }
 
 echo "📦 Preaparing Releases"
 
-# Darwin
-Release darwin/wo_amd64 wo_darwin_amd64
-Release darwin/wo_arm64 wo_darwin_arm64
+for p in ${platforms[@]}
+do
+    archs=$(get_platform_arch $p)
+    for a in ${archs[@]}
+    do
+        if [ $p != "windows" ]
+        then
+            package-binary "$p/wo_${p}_$a" "wo_${p}_$a"
+        else
+            package-binary "$p/wo_${p}_$a.exe" "wo_${p}_$a"
+        fi
+    done
+done
 
-#Linux
-Release linux/wo_386 wo_linux_386
-Release linux/wo_amd64 wo_linux_amd64
-Release linux/wo_arm wo_linux_arm
-Release linux/wo_arm64 wo_linux_arm64
-
-# FreeBSD
-Release freebsd/wo_386 wo_freebsd_386
-Release freebsd/wo_amd64 wo_freebsd_amd64
-Release freebsd/wo_arm wo_freebsd_arm
-Release freebsd/wo_arm64 wo_freebsd_arm64
-
-# Windows
-Release win/wo_386.exe wo_win_386
-Release win/wo_amd64.exe wo_win_amd64
-Release win/wo_arm.exe wo_win_arm
-
-# Pack all built packages & Removes bin folder
+# Packing all built packages & Removes bin folder
 sudo zip -r ./wo_all_platforms.zip ./bin
 
 sudo rm -fr bin
 
-echo "✅ Successfully Created Release files"
+echo "✅ Successfully Bundled Release files"

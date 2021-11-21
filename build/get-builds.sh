@@ -1,11 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 
 set -eu
 
-darwin=(amd64 arm)
-freebsd=(386 amd64 arm)
-linux=(386 amd64 arm arm64)
-windows=(386 amd64 arm)
+ex_dir="$(dirname "$0")"
+. "$ex_dir/platform-arch.sh"
 
 builds=""
 get_build_names() {
@@ -18,9 +16,10 @@ get_build_names() {
     done
 }
 
-get_build_names darwin ${darwin[@]}
-get_build_names freebsd ${freebsd[@]}
-get_build_names linux ${linux[@]}
-get_build_names windows ${windows[@]}
+for p in ${platforms[@]}
+do
+    archs=$(get_platform_arch $p)
+    get_build_names $p ${archs[@]}
+done
 
 echo $builds
