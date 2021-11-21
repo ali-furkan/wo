@@ -10,7 +10,7 @@ import (
 const ErrNotFoundEditor = "editor not found on machine"
 
 func Scan() ([]Editor, error) {
-	s := 2
+	var s int
 	e := []Editor{}
 
 	switch runtime.GOOS {
