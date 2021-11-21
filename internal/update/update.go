@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/ali-furkan/wo/internal/version"
+	version_pkg "github.com/ali-furkan/wo/pkg/version"
 	"github.com/mitchellh/go-homedir"
 	"gopkg.in/yaml.v2"
 )
@@ -63,7 +64,7 @@ func CheckForUpdate() (*ReleaseInfo, error) {
 		return nil, err
 	}
 
-	if version.IsGreaterThan(releaseInfo.Version, version.GetVersion()) {
+	if version_pkg.CompareVersion(releaseInfo.Version, version.CurVersion.String()) {
 		return &releaseInfo, nil
 	}
 

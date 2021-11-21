@@ -39,7 +39,7 @@ func checkUpdateCycle(cfg *config.Config) error {
 	}
 
 	if releaseInfo != nil {
-		fmt.Println(checkUpdatefmt(version.GetVersion(), releaseInfo.Version, releaseInfo.InfoURL))
+		fmt.Println(checkUpdatefmt(version.CurVersion.String(), releaseInfo.Version, releaseInfo.InfoURL))
 	}
 
 	return nil

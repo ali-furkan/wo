@@ -19,7 +19,7 @@ func NewCmdRoot(cfg *config.Config) *cobra.Command {
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		Example:       CmdExample,
-		Version:       version.GetVersion(),
+		Version:       version.CurVersion.String(),
 	}
 
 	cmd.PersistentFlags().Bool("help", false, "Show help for command")

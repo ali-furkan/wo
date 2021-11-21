@@ -23,6 +23,6 @@ func NewCmdVersion() *cobra.Command {
 }
 
 func versionRun(cmd *cobra.Command, args []string) error {
-	fmt.Println("Wo CLI", version.GetVersion())
+	fmt.Println("Wo CLI", version.CurVersion.String())
 	return nil
 }

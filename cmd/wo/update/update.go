@@ -29,7 +29,7 @@ func updateRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fmt.Printf("wo upgraded to %s", version.GetVersion())
+	fmt.Printf("wo upgraded to %s", version.CurVersion.String())
 
 	return nil
 }

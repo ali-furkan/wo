@@ -16,38 +16,10 @@ type Version struct {
 	VersionName string
 }
 
-func GetVersion() string {
-	if CurVersion == "" {
-		return "unknown version"
-	}
-
-	version := fmt.Sprintf("v%s", CurVersion)
-
-	if CurVersionName != "" {
-		version = fmt.Sprintf("v%s-%s", CurVersion, CurVersionName)
-	}
-
-	return version
-}
-
-func (v *Version) String() string {
-	if CurVersion == "" {
-		return "unknown version"
-	}
-
-	version := fmt.Sprintf("v%d.%d.%d", v.Major, v.Minor, v.Patch)
-
-	if CurVersionName != "" {
-		version = fmt.Sprintf("v%s-%s", CurVersion, CurVersionName)
-	}
-
-	return version
-}
-
 func NewVersion(v string) (*Version, error) {
 	reSyntax := regexp.MustCompile("^v([0-9]+).([0-9]+).([0-9]+)(-[a-z]+)*?$")
 	reCatchNumber := regexp.MustCompile("([0-9]+).([0-9]+).([0-9]+)")
-	reCatchName := regexp.MustCompile("([a-z]+)")
+	reCatchName := regexp.MustCompile("(-[a-z]+)")
 
 	match := reSyntax.MatchString(v)
 	if !match {
@@ -64,7 +36,7 @@ func NewVersion(v string) (*Version, error) {
 		return nil, errors.New("v could not parse")
 	}
 
-	versionName := reCatchName.FindString(v)
+	versionName := strings.Trim(reCatchName.FindString(v), "-")
 
 	version := &Version{
 		Major:       major,
@@ -76,17 +48,19 @@ func NewVersion(v string) (*Version, error) {
 	return version, nil
 }
 
-func IsGreaterThan(av, bv string) bool {
+func (v *Version) String() string {
+	baseVersion := fmt.Sprintf("v%d.%d.%d", v.Major, v.Minor, v.Patch)
 
-	aVersion, aErr := NewVersion(av)
-	bVersion, bErr := NewVersion(bv)
-
-	if aErr != nil || bErr != nil {
-		return false
+	if v.VersionName != "" {
+		baseVersion += fmt.Sprintf("-%s", v.VersionName)
 	}
 
-	aVersionNumbers := [3]int{aVersion.Major, aVersion.Minor, aVersion.Patch}
-	bVersionNumbers := [3]int{bVersion.Major, bVersion.Minor, bVersion.Patch}
+	return baseVersion
+}
+
+func (v *Version) IsGreaterThan(oVersion Version) bool {
+	aVersionNumbers := [3]int{v.Major, v.Minor, v.Patch}
+	bVersionNumbers := [3]int{oVersion.Major, oVersion.Minor, oVersion.Patch}
 
 	for i := 0; i < 3; i++ {
 		if aVersionNumbers[i] > bVersionNumbers[i] {
@@ -99,4 +73,35 @@ func IsGreaterThan(av, bv string) bool {
 	}
 
 	return false
+}
+
+func (v *Version) IsEqualTo(oVersion Version, strict bool) bool {
+	if strict {
+		return v.String() == oVersion.String()
+	}
+
+	if v.Major != oVersion.Major {
+		return false
+	}
+
+	if v.Minor != oVersion.Minor {
+		return false
+	}
+
+	if v.Patch != oVersion.Patch {
+		return false
+	}
+
+	return true
+}
+
+func CompareVersion(av, bv string) bool {
+	aVersion, aErr := NewVersion(av)
+	bVersion, bErr := NewVersion(bv)
+
+	if aErr != nil || bErr != nil {
+		return false
+	}
+
+	return aVersion.IsGreaterThan(*bVersion)
 }
