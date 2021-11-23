@@ -5,11 +5,12 @@ import (
 	"path/filepath"
 
 	"github.com/ali-furkan/wo/internal/config"
+	"github.com/ali-furkan/wo/pkg/cycle"
 )
 
-func NewNodeConfig() *CycleNode {
-	cn := NewCycleNode()
-	cn.Type = OnCycleShutdown
+func NewNodeConfig() *cycle.CycleNode {
+	cn := cycle.NewCycleNode()
+	cn.Type = cycle.OnCycleShutdown
 
 	cn.AddExe(resourceConfigSyncCycle)
 	cn.AddExe(configWriteCycle)

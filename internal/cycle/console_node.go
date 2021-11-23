@@ -1,9 +1,12 @@
 package cycle
 
-import "github.com/ali-furkan/wo/internal/config"
+import (
+	"github.com/ali-furkan/wo/internal/config"
+	"github.com/ali-furkan/wo/pkg/cycle"
+)
 
-func NewNodeConsole() *CycleNode {
-	cn := NewCycleNode()
+func NewNodeConsole() *cycle.CycleNode {
+	cn := cycle.NewCycleNode()
 
 	cn.AddExe(consoleCycle)
 
