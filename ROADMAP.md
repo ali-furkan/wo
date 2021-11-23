@@ -11,5 +11,6 @@
 - [ ] Config operations
 - [x] Add Work Scripts [PR](https://github.com/ali-furkan/wo/pull/2)
 - [x] Workflows [PR](https://github.com/ali-furkan/wo/pull/6)
+- [ ] New Design Structure 
 
 If you want to see more features at wo feel free to [contribute](#Contributing)!
