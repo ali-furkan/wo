@@ -1,7 +1,6 @@
 package cycle
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/ali-furkan/wo/internal/cmdutil"
@@ -24,10 +23,12 @@ func scanEditor(ctx *cmdutil.CmdContext) error {
 		return err
 	}
 
-	t := c.Get("last_scan_editor").(time.Time)
-
-	if time.Since(t) < 1 {
-		return nil
+	tStr := c.GetString("last_scan_editor")
+	t, err := time.Parse(time.RFC1123, tStr)
+	if err == nil {
+		if time.Since(t) < 1 {
+			return nil
+		}
 	}
 
 	ne, err := editor.Scan()
@@ -35,17 +36,21 @@ func scanEditor(ctx *cmdutil.CmdContext) error {
 		return err
 	}
 
-	editors := c.Get("editors").(map[string]map[string]interface{})
+	editors := c.Get("editors").(map[interface{}]interface{})
 	if len(ne) != len(editors) {
 		res := make(map[string]map[string]string)
 		for _, editor := range ne {
+			res[editor.Name] = make(map[string]string)
 			res[editor.Name]["id"] = editor.Name
 			res[editor.Name]["exec"] = editor.Exec
 		}
-		editorErr := c.Set("editors", res)
-		scanEditorErr := c.Set("last_scan_editor", time.Now())
-		if editorErr != nil || scanEditorErr != nil {
-			return fmt.Errorf("cycle editor node err: %s, %s", editorErr.Error(), scanEditorErr.Error())
+		err = c.Set("editors", res)
+		if err != nil {
+			return err
+		}
+		err = c.Set("last_scan_editor", time.Now().String())
+		if err != nil {
+			return err
 		}
 	}
 
