@@ -74,8 +74,7 @@ func createBlankConfigFile() error {
 		return err
 	}
 
-	ioutil.WriteFile(configPath, data, 0755)
-	return nil
+	return ioutil.WriteFile(configPath, data, 0755)
 }
 
 func readConfigFile(filename string) ([]byte, error) {
