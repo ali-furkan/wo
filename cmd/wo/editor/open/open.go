@@ -3,7 +3,7 @@ package open
 import (
 	"errors"
 
-	"github.com/ali-furkan/wo/internal/config"
+	"github.com/ali-furkan/wo/internal/cmdutil"
 	"github.com/ali-furkan/wo/internal/editor"
 	"github.com/spf13/cobra"
 )
@@ -15,15 +15,15 @@ const (
 )
 
 type OpenOpts struct {
-	Config *config.Config
+	Ctx *cmdutil.CmdContext
 
 	SelectedEditor string
 	Path           string
 }
 
-func NewCmdOpen(cfg *config.Config) *cobra.Command {
+func NewCmdOpen(ctx *cmdutil.CmdContext) *cobra.Command {
 	opts := &OpenOpts{
-		Config: cfg,
+		Ctx: ctx,
 	}
 
 	cmd := &cobra.Command{
@@ -32,7 +32,7 @@ func NewCmdOpen(cfg *config.Config) *cobra.Command {
 		Long:  CmdLongDesc,
 		Args:  cobra.MaximumNArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.SelectedEditor = cfg.Config().Workspace.DefaultEditor
+			opts.SelectedEditor = ctx.Defaults()["editor"]
 			if len(args) > 0 {
 				opts.SelectedEditor = args[0]
 			}
@@ -48,11 +48,14 @@ func NewCmdOpen(cfg *config.Config) *cobra.Command {
 }
 
 func openEditor(opts *OpenOpts) error {
-	editors := opts.Config.Config().Editors
+	editors := opts.Ctx.Editors()
 
 	for _, e := range editors {
-		if e.Name == opts.SelectedEditor {
-			return editor.OpenEditor(e, opts.Path)
+		if e["id"] == opts.SelectedEditor {
+			return editor.OpenEditor(editor.Editor{
+				Name: e["id"],
+				Exec: e["exec"],
+			}, opts.Path)
 		}
 	}
 

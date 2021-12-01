@@ -8,39 +8,44 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ali-furkan/wo/internal/config"
-	"github.com/ali-furkan/wo/internal/workspace"
+	"github.com/ali-furkan/wo/internal/cmdutil"
+	"github.com/ali-furkan/wo/internal/space"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/google/uuid"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 )
 
 const (
-	CmdUsage     = "create <path>"
+	CmdUsage     = "create <space:workspace|workspace>"
 	CmdShortDesc = "Create a new works"
 	CmdLongDesc  = "Create a new works"
+
+	// Errors
+	ErrInvalidWorkspaceName = "invalid workspace name"
+	ErrInvalidSpaceName     = "invalid space name"
 )
 
 type CreateOpts struct {
-	Config *config.Config
+	Ctx *cmdutil.CmdContext
 
-	Name              string
-	Path              string
-	Description       string
-	Git               bool
-	Readme            bool
-	RCFile            bool
-	Internal          bool
-	Temporary         bool
-	ConfirmSubmit     bool
-	Template          string
-	GitIgnoreTemplate string
-	LicenseTemplate   string
+	Space           string
+	Name            string
+	ID              string
+	Path            string
+	Description     string
+	Git             string
+	Gitignore       string
+	LicenseTemplate string
+	Readme          string
+	External        bool
+	Temporary       bool
+	ConfirmSubmit   bool
 }
 
-func NewCmdCreate(cfg *config.Config) *cobra.Command {
+func NewCmdCreate(ctx *cmdutil.CmdContext) *cobra.Command {
 	opts := &CreateOpts{
-		Config: cfg,
+		Ctx: ctx,
 	}
 
 	cmd := &cobra.Command{
@@ -49,30 +54,50 @@ func NewCmdCreate(cfg *config.Config) *cobra.Command {
 		Long:  CmdLongDesc,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			path, err := homedir.Expand(args[0])
+			a := strings.Split(args[0], ":")
+			if len(a) >= 2 {
+				opts.Space = a[0]
+				opts.ID = strings.Join(a[1:], ":")
+			} else {
+				opts.Space = "global"
+				opts.ID = args[0]
+			}
+
+			if err := validation.Validate(opts.ID, space.WorkspaceNameValidationRules...); err != nil {
+				return errors.New(ErrInvalidWorkspaceName)
+			}
+
+			c, err := ctx.Config()
 			if err != nil {
 				return err
 			}
 
-			if opts.Name == "" {
-				opts.Name = filepath.Base(path)
+			spacePathField := fmt.Sprintf("spaces.%s.root_dir", opts.Space)
+
+			path := c.GetString(spacePathField)
+			if path == "" {
+				return errors.New(ErrInvalidSpaceName)
+			}
+			if opts.External {
+				path, err = homedir.Expand(opts.Path)
+				if err != nil {
+					return err
+				}
 			}
 
-			if !filepath.IsAbs(path) && (strings.HasPrefix(path, ".") || cfg.Config().Workspace.WorkDir == "") {
+			if !filepath.IsAbs(path) {
 				d, err := os.Getwd()
 				if err != nil {
 					return err
 				}
 
 				path = filepath.Join(d, path)
-			} else if (!filepath.IsAbs(path) && cfg.Config().Workspace.WorkDir != "") || opts.Internal {
-				path = filepath.Join(cfg.Config().Workspace.WorkDir, path)
 			}
 
+			path = filepath.Join(path, opts.ID)
+
 			opts.Path = filepath.Clean(path)
-			if !strings.HasSuffix(opts.Path, "/") {
-				opts.Path += "/"
-			}
+			opts.Path += "/"
 
 			return createWork(opts)
 		},
@@ -81,25 +106,26 @@ func NewCmdCreate(cfg *config.Config) *cobra.Command {
 	cmd.Flags().BoolVarP(&opts.ConfirmSubmit, "confirm", "y", false, "Skip the confirmation prompt")
 	cmd.Flags().StringVarP(&opts.Name, "name", "n", "", "Name of the work")
 	cmd.Flags().StringVar(&opts.Description, "description", "", "Description of the work")
-	cmd.Flags().BoolVar(&opts.Git, "git", cfg.Config().Workspace.DefaultGit, "Init git at work")
-	cmd.Flags().BoolVar(&opts.Readme, "readme", cfg.Config().Workspace.DefaultReadme, "Create readme at folder of work")
-	cmd.Flags().BoolVar(&opts.Internal, "internal", false, "Create work to workspace dir")
+	cmd.Flags().BoolVar(&opts.External, "external", false, "Create the workspace outside space dir")
 	cmd.Flags().BoolVar(&opts.Temporary, "temporary", false, "Create work to temporary dir")
-	cmd.Flags().BoolVar(&opts.RCFile, "rc", cfg.Config().Workspace.DefaultRc, "Create resource file for your work")
-	cmd.Flags().StringVar(&opts.Template, "template", "", "Install work with template")
 	cmd.Flags().StringVarP(&opts.LicenseTemplate, "license", "l", "", "Specify SPDX License for work (SPDX ID)")
 
 	return cmd
 }
 
 func createWork(opts *CreateOpts) error {
-	for _, w := range opts.Config.Config().Workspace.Works {
-		if w.Name == opts.Name {
-			errTxt := fmt.Sprintf("%s work already exists", w.Name)
+	c, err := opts.Ctx.Config()
+	if err != nil {
+		return err
+	}
+
+	for _, w := range opts.Ctx.Workspaces() {
+		if w["id"] == opts.ID {
+			errTxt := fmt.Sprintf("%s work already exists", opts.ID)
 			return errors.New(errTxt)
 		}
-		if w.Path == opts.Path {
-			errTxt := fmt.Sprintf("%s path already registered", w.Path)
+		if w["path"] == opts.Path {
+			errTxt := fmt.Sprintf("%s path already registered", opts.Path)
 			return errors.New(errTxt)
 		}
 	}
@@ -107,42 +133,29 @@ func createWork(opts *CreateOpts) error {
 	t := time.Now()
 	id := uuid.NewString()
 
-	workType := workspace.Created
-	if opts.Template != "" {
-		workType = workspace.Template
-	}
-	if opts.Temporary {
-		workType = workspace.Temporary
-	}
-
-	work := workspace.Work{
+	ws := space.Workspace{
 		ID:          id,
 		Name:        opts.Name,
 		Description: opts.Description,
 		Path:        opts.Path,
-		License:     opts.LicenseTemplate,
-		Type:        workType,
-		InitGit:     opts.Git,
-		InitReadme:  opts.Readme,
 		CreatedAt:   t,
-		UpdatedAt:   t,
 	}
 
-	err := workspace.CreateWork(work)
+	wsOpts := space.Options{
+		Readme:    opts.Readme,
+		License:   opts.LicenseTemplate,
+		Git:       opts.Git,
+		Gitignore: opts.Gitignore,
+	}
+
+	err = space.CreateWorkspace(ws, wsOpts)
 	if err != nil {
 		return err
 	}
-	fmt.Println(opts.RCFile)
-	if opts.RCFile {
-		err := config.CreateDefaultRCFile(opts.Path)
-		if err != nil {
-			return err
-		}
-	}
 
-	workspace.PrintTinyStat(work)
+	space.PrintTinyStat(ws)
 
-	opts.Config.Config().Workspace.Works = append(opts.Config.Config().Workspace.Works, work)
+	wsField := fmt.Sprintf("spaces.%s.workspaces.%s", opts.Space, opts.ID)
 
-	return nil
+	return c.Set(wsField, ws)
 }

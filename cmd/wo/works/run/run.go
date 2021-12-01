@@ -2,9 +2,10 @@ package run
 
 import (
 	"errors"
+	"fmt"
 
-	"github.com/ali-furkan/wo/internal/config"
-	"github.com/ali-furkan/wo/internal/workspace"
+	"github.com/ali-furkan/wo/internal/cmdutil"
+	"github.com/ali-furkan/wo/internal/space"
 	"github.com/spf13/cobra"
 )
 
@@ -15,11 +16,11 @@ const (
 
 	// Errors
 	ErrResourceFileNotFound = "resource file not found"
-	ErrScriptNotFound       = "script not found"
+	ErrWsActionNotFound     = "workspace '%s' action not found"
 )
 
 type RunOpts struct {
-	Config *config.Config
+	Ctx *cmdutil.CmdContext
 
 	Name       string
 	WorkingDir string
@@ -29,9 +30,9 @@ type RunOpts struct {
 	Env        []string
 }
 
-func NewCmdRun(cfg *config.Config) *cobra.Command {
+func NewCmdRun(ctx *cmdutil.CmdContext) *cobra.Command {
 	opts := &RunOpts{
-		Config: cfg,
+		Ctx: ctx,
 	}
 
 	cmd := &cobra.Command{
@@ -62,33 +63,40 @@ func NewCmdRun(cfg *config.Config) *cobra.Command {
 }
 
 func runWork(opts *RunOpts) error {
-	if opts.Config.Resource() == nil {
+	wsRC, err := opts.Ctx.WorkspaceRC()
+	if err != nil {
 		return errors.New(ErrResourceFileNotFound)
 	}
 
-	var s *workspace.Script
+	actionMap := wsRC.Get("run").(map[string]interface{})
 
-	if opts.Name == "" {
-		s = &opts.Config.Resource().RunScript
-	}
-
-	for _, script := range opts.Config.Resource().Scripts {
-		if script.Name == opts.Name {
-			s = &script
-			break
+	if opts.Name != "" {
+		actions := wsRC.Get("actions").([]map[string]interface{})
+		for _, a := range actions {
+			if a["name"].(string) == opts.Name {
+				actionMap = a
+				break
+			}
 		}
 	}
 
-	if s == nil {
-		return errors.New(ErrScriptNotFound)
+	if actionMap["name"] == "" || actionMap["run"] == "" {
+		return fmt.Errorf(ErrWsActionNotFound, opts.Name)
 	}
+
+	action := new(space.Action)
+	action.Args = actionMap["args"].([]string)
+	action.Env = actionMap["env"].([]string)
+	action.Name = actionMap["name"].(string)
+	action.Run = actionMap["run"].(string)
+	action.Workingdir = actionMap["working_dir"].(string)
 
 	if len(opts.Env) > 0 {
-		s.Env = append(s.Env, opts.Env...)
+		action.Env = append(action.Env, opts.Env...)
 	}
 	if len(opts.Args) > 0 {
-		s.Args = append(s.Args, opts.Args...)
+		action.Args = append(action.Args, opts.Args...)
 	}
 
-	return workspace.RunScript(*s, opts.Quiet)
+	return space.RunAction(*action, opts.Quiet)
 }

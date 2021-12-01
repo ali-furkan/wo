@@ -1,41 +1,37 @@
 package cmd_init
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
-	"github.com/ali-furkan/wo/internal/config"
-	"github.com/ali-furkan/wo/internal/workspace"
-	"github.com/google/uuid"
-	"github.com/mitchellh/go-homedir"
+	"github.com/ali-furkan/wo/internal/cmdutil"
+	"github.com/ali-furkan/wo/internal/space"
 	"github.com/spf13/cobra"
 )
 
 const (
-	CmdUsage     = "init [name]"
+	CmdUsage     = "init [space:workspace|workspace]"
 	CmdShortDesc = "Init a new works"
 	CmdLongDesc  = "Init a new works"
 )
 
 type InitOpts struct {
-	Config *config.Config
+	Ctx *cmdutil.CmdContext
 
-	Name            string
-	Description     string
-	Path            string
-	Git             bool
-	Readme          bool
-	RCFile          bool
-	ConfirmSubmit   bool
-	LicenseTemplate string
+	Space         string
+	Name          string
+	ID            string
+	Description   string
+	Path          string
+	ConfirmSubmit bool
 }
 
-func NewCmdInit(cfg *config.Config) *cobra.Command {
+func NewCmdInit(ctx *cmdutil.CmdContext) *cobra.Command {
 	opts := &InitOpts{
-		Config: cfg,
+		Ctx: ctx,
 	}
 
 	cmd := &cobra.Command{
@@ -44,31 +40,31 @@ func NewCmdInit(cfg *config.Config) *cobra.Command {
 		Long:  CmdLongDesc,
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			path := "."
-			if len(args) > 0 {
-				var err error
-				path, err = homedir.Expand(args[0])
-				if err != nil {
-					return err
+			wd, err := os.Getwd()
+			if err != nil {
+				return err
+			}
+
+			if opts.Path == "" {
+				opts.Path = wd
+			} else if !filepath.IsAbs(opts.Path) {
+				path := filepath.Join(wd, filepath.Dir(opts.Path))
+				opts.Path = filepath.Clean(path)
+			}
+
+			if len(args) == 1 {
+				a := strings.Split(args[0], ":")
+				if len(a) >= 2 {
+					opts.Space = a[0]
+					opts.ID = strings.Join(a[1:], ":")
+				} else {
+					opts.Space = "global"
+					opts.ID = args[0]
 				}
+			} else {
+				opts.Name = filepath.Base(opts.Path)
+				opts.Space = "global"
 			}
-
-			if !filepath.IsAbs(path) {
-				d, err := os.Getwd()
-				if err != nil {
-					return err
-				}
-
-				path = filepath.Join(d, path)
-			}
-
-			path = filepath.Clean(path)
-
-			if opts.Name == "" {
-				opts.Name = filepath.Base(path)
-			}
-
-			opts.Path = path
 
 			return initWork(opts)
 		},
@@ -77,56 +73,43 @@ func NewCmdInit(cfg *config.Config) *cobra.Command {
 	cmd.Flags().BoolVarP(&opts.ConfirmSubmit, "confirm", "y", false, "Skip the confirmation prompt")
 	cmd.Flags().StringVarP(&opts.Name, "name", "n", "", "Name of the work")
 	cmd.Flags().StringVar(&opts.Description, "description", "", "Description of the work")
-	cmd.Flags().BoolVar(&opts.Git, "git", cfg.Config().Workspace.DefaultGit, "Init git at work")
-	cmd.Flags().BoolVar(&opts.RCFile, "rc", cfg.Config().Workspace.DefaultRc, "Create resource file for your work")
-	cmd.Flags().BoolVar(&opts.Readme, "readme", cfg.Config().Workspace.DefaultReadme, "Create readme at folder of work")
-	cmd.Flags().StringVarP(&opts.LicenseTemplate, "license", "l", "", "Specify SPDX License for work (SPDX ID)")
 
 	return cmd
 }
 
 func initWork(opts *InitOpts) error {
-	for _, w := range opts.Config.Config().Workspace.Works {
-		if w.Name == opts.Name {
-			errTxt := fmt.Sprintf("%s work already exists", w.Name)
-			return errors.New(errTxt)
+	c, err := opts.Ctx.Config()
+	if err != nil {
+		return err
+	}
+
+	for id, w := range opts.Ctx.Workspaces() {
+		if id == opts.Name {
+			return fmt.Errorf("%s work already exists", id)
 		}
-		if w.Path == opts.Path {
-			errTxt := fmt.Sprintf("%s path already registered", w.Path)
-			return errors.New(errTxt)
+		if w["path"] == opts.Path {
+			return fmt.Errorf("%s path already registered", w["path"])
 		}
 	}
 
 	t := time.Now()
 
-	work := workspace.Work{
-		ID:          uuid.NewString(),
+	ws := space.Workspace{
+		ID:          opts.ID,
 		Name:        opts.Name,
 		Description: opts.Description,
 		Path:        opts.Path,
-		License:     opts.LicenseTemplate,
-		Type:        workspace.Init,
-		InitGit:     opts.Git,
-		InitReadme:  opts.Readme,
 		CreatedAt:   t,
-		UpdatedAt:   t,
 	}
 
-	err := workspace.InitWork(work)
+	err = space.InitWorkspace(ws, space.Options{})
 	if err != nil {
 		return err
 	}
 
-	if opts.RCFile {
-		err := config.CreateDefaultRCFile(opts.Path)
-		if err != nil {
-			return err
-		}
-	}
+	space.PrintTinyStat(ws)
 
-	workspace.PrintTinyStat(work)
+	wsField := fmt.Sprintf("spaces.%s.workspaces.%s", opts.Space, ws.ID)
 
-	opts.Config.Config().Workspace.Works = append(opts.Config.Config().Workspace.Works, work)
-
-	return nil
+	return c.Set(wsField, ws)
 }

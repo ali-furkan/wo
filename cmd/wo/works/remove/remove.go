@@ -1,10 +1,10 @@
 package remove
 
 import (
-	"errors"
+	"fmt"
 
-	"github.com/ali-furkan/wo/internal/config"
-	"github.com/ali-furkan/wo/internal/workspace"
+	"github.com/ali-furkan/wo/internal/cmdutil"
+	"github.com/ali-furkan/wo/internal/space"
 	"github.com/spf13/cobra"
 )
 
@@ -12,20 +12,22 @@ const (
 	CmdUsage     = "remove <name> "
 	CmdShortDesc = "Remove work on wo"
 	CmdLongDesc  = "Remove work on wo"
+
+	ErrWsNotFound = "%s workspace not found"
 )
 
 var CmdAliases = []string{"rm"}
 
 type RemoveOpts struct {
-	Config *config.Config
+	Ctx *cmdutil.CmdContext
 
 	Name  string
 	Force bool
 }
 
-func NewCmdRemove(cfg *config.Config) *cobra.Command {
+func NewCmdRemove(ctx *cmdutil.CmdContext) *cobra.Command {
 	opts := &RemoveOpts{
-		Config: cfg,
+		Ctx: ctx,
 	}
 
 	cmd := &cobra.Command{
@@ -48,20 +50,19 @@ func NewCmdRemove(cfg *config.Config) *cobra.Command {
 }
 
 func removeWork(opts *RemoveOpts) error {
-	works := opts.Config.Config().Workspace.Works
+	workspaces := opts.Ctx.Workspaces()
 
-	for i, work := range works {
-		if work.Name == opts.Name {
-			err := workspace.RemoveWork(work.Path, opts.Force)
+	for id, ws := range workspaces {
+		if ws["id"] == opts.Name {
+			err := space.RemoveWorkspace(ws["path"], opts.Force)
 			if err != nil {
 				return err
 			}
 
-			works = append(works[:i], works[i+1:]...)
-			opts.Config.Config().Workspace.Works = works
+			delete(workspaces, id)
 			return nil
 		}
 	}
 
-	return errors.New("work is not found")
+	return fmt.Errorf(ErrWsNotFound, opts.Name)
 }

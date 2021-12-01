@@ -1,11 +1,11 @@
 package open
 
 import (
-	"errors"
+	"fmt"
+	"os"
 
-	"github.com/ali-furkan/wo/internal/config"
+	"github.com/ali-furkan/wo/internal/cmdutil"
 	"github.com/ali-furkan/wo/internal/editor"
-	"github.com/ali-furkan/wo/internal/workspace"
 	"github.com/spf13/cobra"
 )
 
@@ -13,20 +13,23 @@ const (
 	CmdUsage     = "open"
 	CmdShortDesc = "Open work with wo"
 	CmdLongDesc  = "Open work with wo"
+
+	ErrWorkspaceNotFound = "%s workspace not found"
+	ErrUnknownEditor     = "%s editor not found"
 )
 
 var CmdAliases = []string{"o"}
 
 type OpenOpts struct {
-	Config *config.Config
+	Ctx *cmdutil.CmdContext
 
-	WorkName       string
+	WsName         string
 	SelectedEditor string
 }
 
-func NewCmdOpen(cfg *config.Config) *cobra.Command {
+func NewCmdOpen(ctx *cmdutil.CmdContext) *cobra.Command {
 	opts := &OpenOpts{
-		Config: cfg,
+		Ctx: ctx,
 	}
 
 	cmd := &cobra.Command{
@@ -37,7 +40,7 @@ func NewCmdOpen(cfg *config.Config) *cobra.Command {
 		Aliases: CmdAliases,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {
-				opts.WorkName = args[0]
+				opts.WsName = args[0]
 			}
 			if len(args) > 1 {
 				opts.SelectedEditor = args[1]
@@ -46,36 +49,50 @@ func NewCmdOpen(cfg *config.Config) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.WorkName, "name", "n", "", "Work name to operate on")
-	cmd.Flags().StringVarP(&opts.SelectedEditor, "editor", "e", cfg.Config().Workspace.DefaultEditor, "Open work with specified editor")
+	cmd.Flags().StringVarP(&opts.WsName, "name", "n", "", "Work name to operate on")
+	cmd.Flags().StringVarP(&opts.SelectedEditor, "editor", "e", "", "Open work with specified editor")
 
 	return cmd
 }
 
 func openWork(opts *OpenOpts) error {
-	editors := opts.Config.Config().Editors
-	var work *workspace.Work
+	c, err := opts.Ctx.Config()
+	if err != nil {
+		return err
+	}
 
-	for _, w := range opts.Config.Config().Workspace.Works {
-		if w.Name == opts.WorkName {
-			work = &w
+	var wsPath string
+
+	for _, w := range opts.Ctx.Workspaces() {
+		if w["id"] == opts.WsName {
+			wsPath = w["path"]
 			break
 		}
 	}
 
-	if work == nil {
-		return errors.New("open work failed: unknown work")
+	_, err = opts.Ctx.WorkspaceRC()
+	if err == nil && wsPath == "" {
+		d, _ := os.Getwd()
+		wsPath = d
 	}
 
-	for _, e := range editors {
-		if e.Name == opts.SelectedEditor {
-			return editor.OpenEditor(e, work.Path)
-		}
+	if wsPath == "" {
+		return fmt.Errorf(ErrWorkspaceNotFound, opts.WsName)
 	}
 
-	if len(editors) > 0 {
-		return editor.OpenEditor(editors[0], work.Path)
+	if opts.SelectedEditor == "" {
+		opts.SelectedEditor = c.GetString("defaults.editor")
+	}
+	selectedEditorPath := fmt.Sprintf("editors.%s", opts.SelectedEditor)
+	e := c.Get(selectedEditorPath).(map[string]interface{})
+	if e == nil {
+		return fmt.Errorf(ErrUnknownEditor, opts.SelectedEditor)
 	}
 
-	return errors.New("open work failed: unknown editor")
+	selectedEditor := editor.Editor{
+		Name: e["id"].(string),
+		Exec: e["exec"].(string),
+	}
+
+	return editor.OpenEditor(selectedEditor, wsPath)
 }

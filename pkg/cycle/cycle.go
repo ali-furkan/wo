@@ -4,19 +4,19 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/ali-furkan/wo/internal/config"
+	"github.com/ali-furkan/wo/internal/cmdutil"
 )
 
 type Cycle struct {
-	mux    sync.Mutex
-	config *config.Config
+	mux sync.Mutex
 
+	ctx   *cmdutil.CmdContext
 	nodes []*CycleNode
 }
 
-func NewCycle(cfg *config.Config) *Cycle {
+func NewCycle(ctx *cmdutil.CmdContext) *Cycle {
 	c := &Cycle{
-		config: cfg,
+		ctx: ctx,
 	}
 
 	return c
@@ -35,9 +35,9 @@ func (c *Cycle) Run(t CycleNodeType) {
 		if node.Type != t {
 			continue
 		}
-		err := node.Run(c.config)
+		err := node.Run(c.ctx)
 		if err != nil {
-			fmt.Println("Error:\n", err)
+			fmt.Println("cycle error:", err)
 		}
 	}
 }

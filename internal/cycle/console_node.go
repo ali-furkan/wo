@@ -1,7 +1,7 @@
 package cycle
 
 import (
-	"github.com/ali-furkan/wo/internal/config"
+	"github.com/ali-furkan/wo/internal/cmdutil"
 	"github.com/ali-furkan/wo/pkg/cycle"
 )
 
@@ -13,7 +13,7 @@ func NewNodeConsole() *cycle.CycleNode {
 	return cn
 }
 
-func consoleCycle(cfg *config.Config) error {
+func consoleCycle(ctx *cmdutil.CmdContext) error {
 
 	return nil
 }

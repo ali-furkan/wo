@@ -1,12 +1,12 @@
 package cycle
 
 import (
-	"github.com/ali-furkan/wo/internal/config"
+	"github.com/ali-furkan/wo/internal/cmdutil"
 	"github.com/ali-furkan/wo/pkg/cycle"
 )
 
-func NewCycleRoot(cfg *config.Config) *cycle.Cycle {
-	rootCycle := cycle.NewCycle(cfg)
+func NewCycleRoot(ctx *cmdutil.CmdContext) *cycle.Cycle {
+	rootCycle := cycle.NewCycle(ctx)
 
 	// nodes
 	rootCycle.AddNode(NewNodeUpdate())
