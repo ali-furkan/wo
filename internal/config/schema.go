@@ -70,9 +70,34 @@ var (
 			"editor":          "",
 		},
 	}
+	authSchema = FieldSchema{
+		Key:         "auth",
+		Description: "auth",
+		Rules: []validation.Rule{
+			validation.Map(
+				validation.Key("github", validation.Map(
+					validation.Key("token", validation.Required),
+				)),
+				validation.Key("gitlab", validation.Map(
+					validation.Key("username", validation.Required),
+					validation.Key("password", validation.Required),
+				)),
+			),
+		},
+		DefaultValue: map[string]map[string]string{
+			"github": {
+				"token": "",
+			},
+			"gitlab": {
+				"username": "",
+				"password": "",
+			},
+		},
+	}
 
 	// Global Config for schemas
 	ConfigGlobalSchema = []FieldSchema{
+		authSchema,
 		defaultsSchema,
 		editorsSchema,
 		spacesSchema,
