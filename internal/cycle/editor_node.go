@@ -1,6 +1,7 @@
 package cycle
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/ali-furkan/wo/internal/cmdutil"
@@ -41,8 +42,11 @@ func scanEditor(ctx *cmdutil.CmdContext) error {
 			res[editor.Name]["id"] = editor.Name
 			res[editor.Name]["exec"] = editor.Exec
 		}
-		c.Set("editors", res)
-		c.Set("last_scan_editor", time.Now())
+		editorErr := c.Set("editors", res)
+		scanEditorErr := c.Set("last_scan_editor", time.Now())
+		if editorErr != nil || scanEditorErr != nil {
+			return fmt.Errorf("cycle editor node err: %s, %s", editorErr.Error(), scanEditorErr.Error())
+		}
 	}
 
 	return nil

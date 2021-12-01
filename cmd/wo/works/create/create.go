@@ -157,7 +157,5 @@ func createWork(opts *CreateOpts) error {
 
 	wsField := fmt.Sprintf("spaces.%s.workspaces.%s", opts.Space, opts.ID)
 
-	c.Set(wsField, ws)
-
-	return nil
+	return c.Set(wsField, ws)
 }
