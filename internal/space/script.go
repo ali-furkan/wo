@@ -1,4 +1,4 @@
-package workspace
+package space
 
 import (
 	"fmt"
@@ -13,13 +13,13 @@ import (
 
 const (
 	BeforeRunScriptFormat = `
-		Running %s script
+		Running %s action
 		$ wo run %s
 	`
 	ScriptShowFormat = "$ %s"
 )
 
-func RunScript(script Script, quiet bool) error {
+func RunAction(script Action, quiet bool) error {
 	shell, err := loginshell.Shell()
 	if err != nil {
 		return err

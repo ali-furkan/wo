@@ -1,19 +1,18 @@
-// This package will rewrite for bad code in the future
-// TODO (IDEA):
-//	[] package of funcs maybe will move to struct
-// 	[] move work of logical statements to this package
-package workspace
+package space
 
 import (
 	"errors"
 	"fmt"
-	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
 
 	"github.com/MakeNowJust/heredoc"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
+
+var WorkspaceNameValidationRules = []validation.Rule{validation.Required, validation.Length(2, 64), is.PrintableASCII}
 
 func childRun(name string, args ...string) error {
 	cmd := exec.Command(name, args...)
@@ -27,7 +26,7 @@ func childRun(name string, args ...string) error {
 	return nil
 }
 
-func CreateWork(w Work) error {
+func CreateWorkspace(w Workspace, opts Options) error {
 	_, err := os.Stat(w.Path)
 	if !os.IsNotExist(err) {
 		errStr := fmt.Sprintf("%s: folder exists", w.Path)
@@ -39,39 +38,32 @@ func CreateWork(w Work) error {
 		return err
 	}
 
-	return InitWork(w)
+	return InitWorkspace(w, opts)
 }
 
-func InitWork(w Work) error {
+func InitWorkspace(w Workspace, opts Options) error {
 	_, err := os.Stat(w.Path)
 	if os.IsNotExist(err) {
 		errStr := fmt.Sprintf("%s: folder doesn't exists", w.Path)
 		return errors.New(errStr)
 	}
 
-	if w.Template != "" {
-		url, err := url.ParseRequestURI(w.Template)
-		if err != nil {
-			return childRun("git", "clone", url.String(), w.Path)
-		}
-	}
-
-	if w.InitGit {
+	if opts.Git == "enabled" {
 		err := childRun("git", "init", w.Path)
 		if err != nil {
 			return err
 		}
 	}
 
-	if w.InitReadme {
+	if opts.Readme == "enabled" {
 		err := createDefReadme(w.Name, w.Path)
 		if err != nil {
 			return err
 		}
 	}
 
-	if w.License != "" {
-		err := createLicense(w.Name, w.License, w.Path)
+	if opts.License != "" {
+		err := createLicense(w.Name, opts.License, w.Path)
 		if err != nil {
 			return err
 		}
@@ -80,7 +72,7 @@ func InitWork(w Work) error {
 	return nil
 }
 
-func RemoveWork(path string, force bool) error {
+func RemoveWorkspace(path string, force bool) error {
 	if force {
 		return os.RemoveAll(path)
 	}
@@ -88,21 +80,18 @@ func RemoveWork(path string, force bool) error {
 	return nil
 }
 
-func PrintTinyStat(w Work) {
+func PrintTinyStat(w Workspace) {
 	stat := heredoc.Docf(`
-		Created '%s' work by WO CLI
+		Success, Created '%s' workspace at the '%s' by Wo
 
 		Name: %s
-		Init Git: %s
-		Init Readme: %s
 		Path: %s
-		License: %s
-	`, w.Name, w.Name, fmt.Sprint(w.InitGit), fmt.Sprint(w.InitReadme), w.Path, w.License)
+	`, w.Name, w.Name)
 
 	fmt.Println(stat)
 }
 
-func MoveWork(w *Work, newpath string) error {
+func MoveWorkspace(w map[string]string, newpath string) error {
 	p := newpath
 	if !filepath.IsAbs(newpath) {
 		d, err := os.Getwd()
@@ -115,5 +104,5 @@ func MoveWork(w *Work, newpath string) error {
 
 	p = filepath.Clean(p)
 
-	return os.Rename(w.Path, p)
+	return os.Rename(w["path"], p)
 }
