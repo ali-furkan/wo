@@ -3,7 +3,7 @@ package cycle
 import (
 	"time"
 
-	"github.com/ali-furkan/wo/internal/config"
+	"github.com/ali-furkan/wo/internal/cmdutil"
 	"github.com/ali-furkan/wo/internal/editor"
 	"github.com/ali-furkan/wo/pkg/cycle"
 )
@@ -17,8 +17,15 @@ func NewNodeEditor() *cycle.CycleNode {
 	return cn
 }
 
-func scanEditor(cfg *config.Config) error {
-	if time.Since(cfg.Config().Workspace.LastScanEditor) < 1 {
+func scanEditor(ctx *cmdutil.CmdContext) error {
+	c, err := ctx.Config()
+	if err != nil {
+		return err
+	}
+
+	t := c.Get("last_scan_editor").(time.Time)
+
+	if time.Since(t) < 1 {
 		return nil
 	}
 
@@ -27,10 +34,15 @@ func scanEditor(cfg *config.Config) error {
 		return err
 	}
 
-	e := &cfg.Config().Editors
-	if len(ne) != len(*e) {
-		*e = ne
-		cfg.Config().Workspace.LastScanEditor = time.Now()
+	editors := c.Get("editors").(map[string]map[string]interface{})
+	if len(ne) != len(editors) {
+		res := make(map[string]map[string]string)
+		for _, editor := range ne {
+			res[editor.Name]["id"] = editor.Name
+			res[editor.Name]["exec"] = editor.Exec
+		}
+		c.Set("editors", res)
+		c.Set("last_scan_editor", time.Now())
 	}
 
 	return nil

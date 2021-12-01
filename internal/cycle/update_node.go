@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/ali-furkan/wo/internal/config"
+	"github.com/ali-furkan/wo/internal/cmdutil"
 	"github.com/ali-furkan/wo/internal/update"
 	"github.com/ali-furkan/wo/internal/version"
 	"github.com/ali-furkan/wo/pkg/cycle"
@@ -29,7 +29,7 @@ func checkUpdatefmt(oldVersion, newVersion, releaseURL string) string {
 	return color.YellowString(str)
 }
 
-func checkUpdateCycle(cfg *config.Config) error {
+func checkUpdateCycle(ctx *cmdutil.CmdContext) error {
 	releaseInfo, err := update.CheckForUpdate()
 	if err != nil && err.Error() == update.ErrInternetConn {
 		return nil
