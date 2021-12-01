@@ -37,7 +37,7 @@ func (c *Cycle) Run(t CycleNodeType) {
 		}
 		err := node.Run(c.ctx)
 		if err != nil {
-			fmt.Println("Error:\n", err)
+			fmt.Println("cycle error:", err)
 		}
 	}
 }

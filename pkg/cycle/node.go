@@ -1,6 +1,7 @@
 package cycle
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/ali-furkan/wo/internal/cmdutil"
@@ -48,6 +49,7 @@ func (cn *CycleNode) Run(ctx *cmdutil.CmdContext) (err error) {
 		cn.mux.Unlock()
 
 		if err != nil {
+			err = fmt.Errorf("%s node err: %s", cn.id, err.Error())
 			break
 		}
 	}
