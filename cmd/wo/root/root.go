@@ -1,6 +1,7 @@
 package root
 
 import (
+	cmdAuth "github.com/ali-furkan/wo/cmd/wo/auth"
 	cmdEditor "github.com/ali-furkan/wo/cmd/wo/editor"
 	cmdUpdate "github.com/ali-furkan/wo/cmd/wo/update"
 	cmdVersion "github.com/ali-furkan/wo/cmd/wo/version"
@@ -28,6 +29,7 @@ func NewCmdRoot(ctx *cmdutil.CmdContext) *cobra.Command {
 	cmd.AddCommand(cmdUpdate.NewCmdUpdate())
 	cmd.AddCommand(cmdVersion.NewCmdVersion())
 	cmd.AddCommand(cmdEditor.NewCmdEditor(ctx))
+	cmd.AddCommand(cmdAuth.NewCmdAuth(ctx))
 	cmdWorks.InitCmdWorks(cmd, ctx)
 
 	return cmd
