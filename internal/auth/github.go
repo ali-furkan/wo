@@ -29,7 +29,10 @@ func (gh *GitHub) RequestCodeAndPollToken() (*api.AccessToken, error) {
 
 	fmt.Printf("First copy your one-time code: %s\n", code.UserCode)
 	fmt.Printf("then open: %s\n", code.VerificationURI)
-	browser.OpenURL(code.VerificationURI)
+	err = browser.OpenURL(code.VerificationURI)
+	if err != nil {
+		return nil, err
+	}
 
 	accessToken, err := device.PollToken(gh.HttpClient, PollURL, ClientID, code)
 	if err != nil {
