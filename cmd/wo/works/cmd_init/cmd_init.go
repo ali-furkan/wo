@@ -9,7 +9,6 @@ import (
 
 	"github.com/ali-furkan/wo/internal/cmdutil"
 	"github.com/ali-furkan/wo/internal/space"
-	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 )
 
@@ -96,7 +95,7 @@ func initWork(opts *InitOpts) error {
 	t := time.Now()
 
 	ws := space.Workspace{
-		ID:          uuid.NewString(),
+		ID:          opts.ID,
 		Name:        opts.Name,
 		Description: opts.Description,
 		Path:        opts.Path,
@@ -110,7 +109,7 @@ func initWork(opts *InitOpts) error {
 
 	space.PrintTinyStat(ws)
 
-	wsField := fmt.Sprintf("spaces.%s.workspaces.%s")
+	wsField := fmt.Sprintf("spaces.%s.workspaces.%s", opts.Space, ws.ID)
 
 	return c.Set(wsField, ws)
 }
