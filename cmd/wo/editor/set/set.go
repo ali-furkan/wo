@@ -1,10 +1,9 @@
 package set
 
 import (
-	"errors"
 	"fmt"
 
-	"github.com/ali-furkan/wo/internal/config"
+	"github.com/ali-furkan/wo/internal/cmdutil"
 	"github.com/spf13/cobra"
 )
 
@@ -15,14 +14,14 @@ const (
 )
 
 type SetEditorOpts struct {
-	Config *config.Config
+	Ctx *cmdutil.CmdContext
 
 	SelectedEditor string
 }
 
-func NewCmdSetEditor(cfg *config.Config) *cobra.Command {
+func NewCmdSetEditor(ctx *cmdutil.CmdContext) *cobra.Command {
 	opts := &SetEditorOpts{
-		Config: cfg,
+		Ctx: ctx,
 	}
 
 	cmd := &cobra.Command{
@@ -41,18 +40,22 @@ func NewCmdSetEditor(cfg *config.Config) *cobra.Command {
 }
 
 func setEditor(opts *SetEditorOpts) error {
-	c := opts.Config.Config()
-
-	for _, editor := range c.Editors {
-		if editor.Name == opts.SelectedEditor {
-			c.Workspace.DefaultEditor = editor.Name
-
-			fmt.Printf("\n%s set default editor\n", editor.Name)
-
-			return nil
-		}
+	config, err := opts.Ctx.Config()
+	if err != nil {
+		return err
 	}
 
-	err := fmt.Sprintf("specified `%s` editor not found", opts.SelectedEditor)
-	return errors.New(err)
+	field := fmt.Sprintf("editors.%s", opts.SelectedEditor)
+	editor := config.Get(field).(map[string]string)
+	if editor == nil {
+		return fmt.Errorf("specified '%s' editor not found", opts.SelectedEditor)
+	}
+
+	err = config.Set("defaults.editor", editor["id"])
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("\n%s set default editor\n", editor["id"])
+	return nil
 }

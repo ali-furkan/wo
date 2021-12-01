@@ -3,15 +3,15 @@ package list
 import (
 	"fmt"
 	"strconv"
+	"time"
 
-	"github.com/ali-furkan/wo/internal/workspace"
 	tea "github.com/charmbracelet/bubbletea"
 	humanize "github.com/dustin/go-humanize"
 	"github.com/fatih/color"
 )
 
 type model struct {
-	list   []workspace.Work
+	list   map[string]map[string]string
 	cursor int
 }
 
@@ -65,13 +65,16 @@ func (m model) View() string {
 	res += fmt.Sprintf("Showing %d list of work\n\n", len(m.list))
 	res += fmt.Sprintf("%-16s\t%-24s%-16s\t%s\n", "Name", "Description", "Path", "Last Update")
 
-	for i, w := range m.list[m.cursor:] {
-		if i < 10 {
+	var i int
+	for _, ws := range m.list {
+		i++
+		if i < 10+m.cursor && m.cursor < i {
 			num := color.HiBlueString(strconv.Itoa(i + 1 + m.cursor))
-			name := color.HiWhiteString(maxStrSize(w.Name, 0, 16))
-			desc := maxStrSize(w.Description, 0, 21)
-			path := maxStrSize(w.Path, len(w.Path)-13, 0)
-			upTime := humanize.Time(w.UpdatedAt)
+			name := color.HiWhiteString(maxStrSize(ws["id"], 0, 16))
+			desc := maxStrSize(ws["description"], 0, 21)
+			path := maxStrSize(ws["path"], len(ws["path"])-13, 0)
+			t, _ := time.Parse(time.RFC1123, ws["created_at"])
+			upTime := humanize.Time(t)
 
 			res += fmt.Sprintf("%s.%-24s\t%-24s%-16s\t%s\n", num, name, desc, path, upTime)
 		}

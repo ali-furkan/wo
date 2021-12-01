@@ -3,7 +3,7 @@ package list
 import (
 	"errors"
 
-	"github.com/ali-furkan/wo/internal/config"
+	"github.com/ali-furkan/wo/internal/cmdutil"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 )
@@ -16,29 +16,29 @@ const (
 
 var CmdAliases = []string{"ls"}
 
-func NewCmdList(cfg *config.Config) *cobra.Command {
+func NewCmdList(ctx *cmdutil.CmdContext) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   CmdUsage,
 		Short: CmdShortDesc,
 		Long:  CmdLongDesc,
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return listWorks(cfg)
+			return listWorks(ctx)
 		},
 	}
 
 	return cmd
 }
 
-func listWorks(cfg *config.Config) error {
-	works := cfg.Config().Workspace.Works
+func listWorks(ctx *cmdutil.CmdContext) error {
+	ws := ctx.Workspaces()
 
-	if len(works) == 0 {
+	if len(ws) == 0 {
 		return errors.New("works not found")
 	}
 
 	m := &model{
-		list: works,
+		list: ws,
 	}
 	p := tea.NewProgram(m)
 

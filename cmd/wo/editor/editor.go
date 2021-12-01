@@ -4,7 +4,7 @@ import (
 	"github.com/ali-furkan/wo/cmd/wo/editor/list"
 	"github.com/ali-furkan/wo/cmd/wo/editor/open"
 	"github.com/ali-furkan/wo/cmd/wo/editor/set"
-	"github.com/ali-furkan/wo/internal/config"
+	"github.com/ali-furkan/wo/internal/cmdutil"
 	"github.com/spf13/cobra"
 )
 
@@ -14,16 +14,16 @@ const (
 	CmdLongDesc  = "Manage your editors"
 )
 
-func NewCmdEditor(cfg *config.Config) *cobra.Command {
+func NewCmdEditor(ctx *cmdutil.CmdContext) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   CmdUsage,
 		Short: CmdShortDesc,
 		Long:  CmdLongDesc,
 	}
 
-	cmd.AddCommand(open.NewCmdOpen(cfg))
-	cmd.AddCommand(set.NewCmdSetEditor(cfg))
-	cmd.AddCommand(list.NewCmdSetEditor(cfg))
+	cmd.AddCommand(open.NewCmdOpen(ctx))
+	cmd.AddCommand(set.NewCmdSetEditor(ctx))
+	cmd.AddCommand(list.NewCmdSetEditor(ctx))
 
 	return cmd
 }

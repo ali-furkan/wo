@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/ali-furkan/wo/internal/config"
-	"github.com/ali-furkan/wo/internal/workspace"
+	"github.com/ali-furkan/wo/internal/cmdutil"
+	"github.com/ali-furkan/wo/internal/space"
 	"github.com/spf13/cobra"
 )
 
@@ -17,15 +17,15 @@ const (
 )
 
 type MoveOpts struct {
-	Config *config.Config
+	Ctx *cmdutil.CmdContext
 
 	Name string
 	Path string
 }
 
-func NewCmdMove(cfg *config.Config) *cobra.Command {
+func NewCmdMove(ctx *cmdutil.CmdContext) *cobra.Command {
 	opts := &MoveOpts{
-		Config: cfg,
+		Ctx: ctx,
 	}
 
 	cmd := &cobra.Command{
@@ -48,21 +48,21 @@ func NewCmdMove(cfg *config.Config) *cobra.Command {
 }
 
 func moveWorks(opts *MoveOpts) error {
-	ws := opts.Config.Config().Workspace
-
-	for _, w := range ws.Works {
-		if w.Name == opts.Name {
-			oldPath := w.Path
-			if isMatch, err := filepath.Match(oldPath, w.Path); isMatch && err != nil {
+	for _, w := range opts.Ctx.Workspaces() {
+		if w["id"] == opts.Name {
+			oldPath := w["path"]
+			if isMatch, err := filepath.Match(oldPath, w["path"]); isMatch && err != nil {
 				return errors.New("%s can't move to the same path")
 			}
 
-			err := workspace.MoveWork(&w, opts.Path)
+			err := space.MoveWorkspace(w, opts.Path)
 			if err != nil {
 				return err
 			}
 
-			fmt.Printf("%s moved '%s' '%s'", w.Name, oldPath, opts.Path)
+			w["path"] = opts.Path
+
+			fmt.Printf("%s moved '%s' '%s'", w["id"], oldPath, opts.Path)
 
 			return nil
 		}
