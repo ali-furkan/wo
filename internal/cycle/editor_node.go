@@ -13,7 +13,7 @@ const CheckFreqTime = 5 * 60
 func NewNodeEditor() *cycle.CycleNode {
 	cn := cycle.NewCycleNode()
 	cn.Name = "editor"
-	cn.Type = cycle.OnCycleStart
+	cn.Type = OnCycleStart
 
 	cn.AddExe(scanEditor)
 

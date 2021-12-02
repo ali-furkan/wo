@@ -10,11 +10,6 @@ import (
 
 type CycleNodeType uint
 
-const (
-	OnCycleStart CycleNodeType = iota
-	OnCycleShutdown
-)
-
 type CycleNode struct {
 	mux sync.Mutex
 
