@@ -109,11 +109,10 @@ func (cm ConfigMap) Map() map[string]interface{} {
 
 func (cm *ConfigMap) validate(val interface{}, field string) error {
 	ks := strings.Split(field, ".")
-	lastKey := ks[len(ks)-1]
 
-	schema, err := cm.GetSchema(lastKey)
+	schema, err := cm.GetSchema(ks[0])
 	if err != nil {
-		return err
+		return fmt.Errorf(ErrConfigValidation, field, err)
 	}
 
 	err = validation.Validate(val, schema.Rules...)

@@ -97,6 +97,12 @@ var (
 
 	// Global Config for schemas
 	ConfigGlobalSchema = []FieldSchema{
+		{
+			Key:          "last_scan_editor",
+			Description:  "the last editor scan time",
+			Rules:        []validation.Rule{},
+			DefaultValue: 0,
+		},
 		authSchema,
 		defaultsSchema,
 		editorsSchema,

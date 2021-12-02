@@ -69,7 +69,7 @@ func (fc *fileConfig) Reset() {
 }
 
 func (fc fileConfig) Map() map[string]interface{} {
-	return map[string]interface{}{}
+	return fc.m.root
 }
 
 func (fc fileConfig) Write() error {
