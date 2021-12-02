@@ -49,7 +49,7 @@ func (cn *CycleNode) Run(ctx *cmdutil.CmdContext) (err error) {
 		cn.mux.Unlock()
 
 		if err != nil {
-			err = fmt.Errorf("%s node err: %s", cn.id, err.Error())
+			err = fmt.Errorf("%s node err: %s", cn.Name, err.Error())
 			break
 		}
 	}

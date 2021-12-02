@@ -8,8 +8,11 @@ import (
 	"github.com/ali-furkan/wo/pkg/cycle"
 )
 
+const CheckFreqTime = 5 * 60
+
 func NewNodeEditor() *cycle.CycleNode {
 	cn := cycle.NewCycleNode()
+	cn.Name = "editor"
 	cn.Type = cycle.OnCycleStart
 
 	cn.AddExe(scanEditor)
@@ -23,12 +26,12 @@ func scanEditor(ctx *cmdutil.CmdContext) error {
 		return err
 	}
 
-	tStr := c.GetString("last_scan_editor")
-	t, err := time.Parse(time.RFC1123, tStr)
-	if err == nil {
-		if time.Since(t) < 1 {
-			return nil
-		}
+	t, ok := c.Get("last_scan_editor").(int64)
+	if !ok {
+		t = 0
+	}
+	if time.Now().Unix() < t+CheckFreqTime {
+		return nil
 	}
 
 	ne, err := editor.Scan()
@@ -48,7 +51,7 @@ func scanEditor(ctx *cmdutil.CmdContext) error {
 		if err != nil {
 			return err
 		}
-		err = c.Set("last_scan_editor", time.Now().String())
+		err = c.Set("last_scan_editor", time.Now().Unix())
 		if err != nil {
 			return err
 		}

@@ -13,8 +13,9 @@ import (
 
 func NewNodeUpdate() *cycle.CycleNode {
 	cn := cycle.NewCycleNode()
-
+	cn.Name = "update"
 	cn.Type = cycle.OnCycleStart
+
 	cn.AddExe(checkUpdateCycle)
 
 	return cn

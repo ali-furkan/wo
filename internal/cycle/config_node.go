@@ -7,6 +7,7 @@ import (
 
 func NewNodeConfig() *cycle.CycleNode {
 	cn := cycle.NewCycleNode()
+	cn.Name = "config"
 	cn.Type = cycle.OnCycleShutdown
 
 	cn.AddExe(configWriteCycle)

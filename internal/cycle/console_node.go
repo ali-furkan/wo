@@ -7,6 +7,7 @@ import (
 
 func NewNodeConsole() *cycle.CycleNode {
 	cn := cycle.NewCycleNode()
+	cn.Name = "console"
 
 	cn.AddExe(consoleCycle)
 
