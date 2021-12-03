@@ -99,7 +99,7 @@ func initWork(opts *InitOpts) error {
 		Name:        opts.Name,
 		Description: opts.Description,
 		Path:        opts.Path,
-		CreatedAt:   t,
+		CreatedAt:   t.Unix(),
 	}
 
 	err = space.InitWorkspace(ws, space.Options{})

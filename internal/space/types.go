@@ -1,7 +1,5 @@
 package space
 
-import "time"
-
 type Options struct {
 	Readme        string `json:"readme"`
 	CodeOfConduct string `json:"code_of_conduct"`
@@ -20,14 +18,14 @@ type Space struct {
 }
 
 type Workspace struct {
-	ID          string    `json:"id"`
-	Name        string    `json:"name"`
-	Path        string    `json:"path"`
-	Description string    `json:"description"`
-	Run         string    `json:"run"`
-	Actions     []Action  `json:"actions"`
-	Flows       []Flows   `json:"flows"`
-	CreatedAt   time.Time `json:"created_at"`
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Path        string   `json:"path"`
+	Description string   `json:"description"`
+	Run         string   `json:"run"`
+	Actions     []Action `json:"actions"`
+	Flows       []Flows  `json:"flows"`
+	CreatedAt   int64    `json:"created_at"`
 }
 
 type Action struct {
