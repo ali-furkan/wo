@@ -9,12 +9,18 @@ import (
 func GetWorkspacesFromConfig(c config.Config) map[string]map[string]string {
 	spaces := c.Get("spaces").(map[string]interface{})
 
-	for id := range spaces {
-		field := fmt.Sprintf("spaces.%s.workspaces", id)
-		workspaces := c.Get(field).(map[string]map[string]string)
+	workspaces := make(map[string]map[string]string)
 
-		return workspaces
+	for sid := range spaces {
+		spaceWorkspaces, ok := spaces["workspaces"].(map[interface{}]interface{})
+		if !ok {
+			continue
+		}
+		for wid, ws := range spaceWorkspaces {
+			field := fmt.Sprintf("%s:%s", sid, wid)
+			workspaces[field] = ws.(map[string]string)
+		}
 	}
 
-	return nil
+	return workspaces
 }

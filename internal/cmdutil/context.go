@@ -10,7 +10,6 @@ import (
 )
 
 type CmdContext struct {
-	// User Accounts
 	// Extensions
 
 	Config      func() (config.Config, error)
