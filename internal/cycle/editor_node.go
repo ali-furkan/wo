@@ -56,7 +56,7 @@ func scanEditor(ctx *cmdutil.CmdContext) error {
 	}
 
 	if defEditor := c.GetString("defaults.editor"); defEditor == "" {
-		c.Set("defaults.editor", ne[0].ID)
+		return c.Set("defaults.editor", ne[0].ID)
 	}
 
 	return nil
