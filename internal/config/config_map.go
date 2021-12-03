@@ -37,9 +37,9 @@ func (cm *ConfigMap) Get(field string) interface{} {
 	ks := strings.Split(field, ".")
 	lastKey := ks[len(ks)-1]
 
-	nestedMap, err := cm.searchMap(&cm.root, ks[:len(ks)-1]...)
+	nestedMap, err := cm.searchMap(cm.root, ks[:len(ks)-1]...)
 	if err != nil {
-		m, err := cm.searchMap(&cm.defaults, ks[:len(ks)-1]...)
+		m, err := cm.searchMap(cm.defaults, ks[:len(ks)-1]...)
 		if err != nil {
 			return nil
 		}
@@ -73,15 +73,12 @@ func (cm *ConfigMap) Set(field string, val interface{}) error {
 	ks := strings.Split(field, ".")
 	lastKey := ks[len(ks)-1]
 
-	nestedMap, err := cm.searchMap(&cm.root, ks[:len(ks)-1]...)
+	err := cm.validate(val, field)
 	if err != nil {
 		return err
 	}
 
-	err = cm.validate(val, field)
-	if err != nil {
-		return err
-	}
+	nestedMap := cm.deepSearchMap(cm.root, ks[:len(ks)-1]...)
 
 	nestedMap[lastKey] = val
 	return nil
@@ -91,7 +88,7 @@ func (cm *ConfigMap) Reset(field string) error {
 	ks := strings.Split(field, ".")
 	lastKey := ks[len(ks)-1]
 
-	nestedMap, err := cm.searchMap(&cm.root, ks[:len(ks)-1]...)
+	nestedMap, err := cm.searchMap(cm.root, ks[:len(ks)-1]...)
 	if err != nil {
 		return err
 	}
@@ -110,6 +107,10 @@ func (cm ConfigMap) Map() map[string]interface{} {
 func (cm *ConfigMap) validate(val interface{}, field string) error {
 	ks := strings.Split(field, ".")
 
+	if len(ks) > 2 {
+		return nil
+	}
+
 	schema, err := cm.GetSchema(ks[0])
 	if err != nil {
 		return fmt.Errorf(ErrConfigValidation, field, err)
@@ -123,30 +124,56 @@ func (cm *ConfigMap) validate(val interface{}, field string) error {
 	return nil
 }
 
-func (cm *ConfigMap) searchMap(m *map[string]interface{}, keys ...string) (map[string]interface{}, error) {
-	var (
-		v  map[string]interface{} = *m
-		ok bool
-	)
-
+func (cm *ConfigMap) searchMap(m map[string]interface{}, keys ...string) (map[string]interface{}, error) {
 	if len(keys) == 0 {
-		return v, nil
+		return m, nil
 	}
 
-	for i, k := range keys {
-		v, ok = v[k].(map[string]interface{})
+	for _, k := range keys {
+		m2, ok := m[k]
 		if !ok {
 			return nil, errors.New(ErrConfigMapInvalidFieldAddr)
 		}
 
-		if len(keys)-i == 1 {
-			return v, nil
+		m3, ok := m2.(map[string]interface{})
+		if !ok {
+			switch m2.(type) {
+			case map[string]interface{}, map[interface{}]interface{}:
+				m3 = make(map[string]interface{})
+				m[k] = m3
+			default:
+				return nil, errors.New(ErrConfigMapInvalidFieldAddr)
+			}
 		}
 
-		if len(keys)-i > 1 && reflect.TypeOf(v).Kind() != reflect.Map {
-			return v, errors.New(ErrConfigMapInvalidFieldAddr)
-		}
+		m = m3
 	}
 
-	return nil, errors.New(ErrConfigMapInvalidFieldAddr)
+	return m, nil
+}
+
+func (cm *ConfigMap) deepSearchMap(m map[string]interface{}, keys ...string) map[string]interface{} {
+	if len(keys) == 0 {
+		return m
+	}
+
+	for _, k := range keys {
+		m2, ok := m[k]
+		if !ok {
+			m3 := make(map[string]interface{})
+			m[k] = m3
+			m = m3
+			continue
+		}
+
+		m3, ok := m2.(map[string]interface{})
+		if !ok {
+			m3 = make(map[string]interface{})
+			m[k] = m3
+		}
+
+		m = m3
+	}
+
+	return m
 }
