@@ -11,7 +11,6 @@ import (
 	"github.com/ali-furkan/wo/internal/cmdutil"
 	"github.com/ali-furkan/wo/internal/space"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/google/uuid"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 )
@@ -22,7 +21,7 @@ const (
 	CmdLongDesc  = "Create a new works"
 
 	// Errors
-	ErrInvalidWorkspaceName = "invalid workspace name"
+	ErrInvalidWorkspaceName = "invalid workspace name: %s"
 	ErrInvalidSpaceName     = "invalid space name"
 )
 
@@ -64,7 +63,7 @@ func NewCmdCreate(ctx *cmdutil.CmdContext) *cobra.Command {
 			}
 
 			if err := validation.Validate(opts.ID, space.WorkspaceNameValidationRules...); err != nil {
-				return errors.New(ErrInvalidWorkspaceName)
+				return fmt.Errorf(ErrInvalidWorkspaceName, err)
 			}
 
 			c, err := ctx.Config()
@@ -97,7 +96,10 @@ func NewCmdCreate(ctx *cmdutil.CmdContext) *cobra.Command {
 			path = filepath.Join(path, opts.ID)
 
 			opts.Path = filepath.Clean(path)
-			opts.Path += "/"
+
+			if opts.Name == "" {
+				opts.Name = opts.ID
+			}
 
 			return createWork(opts)
 		},
@@ -119,11 +121,13 @@ func createWork(opts *CreateOpts) error {
 		return err
 	}
 
-	for _, w := range opts.Ctx.Workspaces() {
-		if w["id"] == opts.ID {
+	for id, w := range opts.Ctx.Workspaces() {
+		field := fmt.Sprintf("%s:%s", opts.Space, opts.ID)
+		if id == field {
 			errTxt := fmt.Sprintf("%s work already exists", opts.ID)
 			return errors.New(errTxt)
 		}
+
 		if w["path"] == opts.Path {
 			errTxt := fmt.Sprintf("%s path already registered", opts.Path)
 			return errors.New(errTxt)
@@ -131,14 +135,13 @@ func createWork(opts *CreateOpts) error {
 	}
 
 	t := time.Now()
-	id := uuid.NewString()
 
 	ws := space.Workspace{
-		ID:          id,
+		ID:          opts.ID,
 		Name:        opts.Name,
 		Description: opts.Description,
 		Path:        opts.Path,
-		CreatedAt:   t,
+		CreatedAt:   t.Unix(),
 	}
 
 	wsOpts := space.Options{
@@ -155,7 +158,11 @@ func createWork(opts *CreateOpts) error {
 
 	space.PrintTinyStat(ws)
 
-	wsField := fmt.Sprintf("spaces.%s.workspaces.%s", opts.Space, opts.ID)
+	field := fmt.Sprintf("spaces.%s.workspaces.%s", opts.Space, opts.Space)
+	err = c.Set(field, ws.MapForConfig())
+	if err != nil {
+		return fmt.Errorf("workspace creating error: %s", err.Error())
+	}
 
-	return c.Set(wsField, ws)
+	return nil
 }
