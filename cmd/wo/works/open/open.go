@@ -84,8 +84,8 @@ func openWork(opts *OpenOpts) error {
 		opts.SelectedEditor = c.GetString("defaults.editor")
 	}
 	selectedEditorPath := fmt.Sprintf("editors.%s", opts.SelectedEditor)
-	e := c.Get(selectedEditorPath).(map[string]interface{})
-	if e == nil {
+	e, ok := c.Get(selectedEditorPath).(map[string]interface{})
+	if !ok {
 		return fmt.Errorf(ErrUnknownEditor, opts.SelectedEditor)
 	}
 
