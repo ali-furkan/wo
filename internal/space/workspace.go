@@ -1,7 +1,6 @@
 package space
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -10,6 +9,11 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
+)
+
+const (
+	ErrFormatAlreadyExists     = "dir already exists: %s"
+	ErrFormatFolderDoesntExist = "folder doesn't exist: %s"
 )
 
 var WorkspaceNameValidationRules = []validation.Rule{validation.Required, validation.Length(2, 64), is.PrintableASCII}
@@ -29,8 +33,7 @@ func childRun(name string, args ...string) error {
 func CreateWorkspace(w Workspace, opts Options) error {
 	_, err := os.Stat(w.Path)
 	if !os.IsNotExist(err) {
-		errStr := fmt.Sprintf("%s: folder exists", w.Path)
-		return errors.New(errStr)
+		return fmt.Errorf(ErrFormatAlreadyExists, w.Path)
 	}
 
 	err = os.MkdirAll(w.Path, 0755)
@@ -44,8 +47,7 @@ func CreateWorkspace(w Workspace, opts Options) error {
 func InitWorkspace(w Workspace, opts Options) error {
 	_, err := os.Stat(w.Path)
 	if os.IsNotExist(err) {
-		errStr := fmt.Sprintf("%s: folder doesn't exists", w.Path)
-		return errors.New(errStr)
+		return fmt.Errorf(ErrFormatFolderDoesntExist, w.Path)
 	}
 
 	if opts.Git == "enabled" {
@@ -83,10 +85,7 @@ func RemoveWorkspace(path string, force bool) error {
 func PrintTinyStat(w Workspace) {
 	stat := heredoc.Docf(`
 		Success, Created '%s' workspace at the '%s' by Wo
-
-		Name: %s
-		Path: %s
-	`, w.Name, w.Name)
+	`, w.Name, w.Path)
 
 	fmt.Println(stat)
 }
