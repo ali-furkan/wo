@@ -12,9 +12,9 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/ali-furkan/wo/internal/config"
 	"github.com/ali-furkan/wo/internal/version"
 	version_pkg "github.com/ali-furkan/wo/pkg/version"
-	"github.com/mitchellh/go-homedir"
 	"gopkg.in/yaml.v2"
 )
 
@@ -112,12 +112,9 @@ func Update() error {
 }
 
 func getStatePath() (string, error) {
-	woDir, err := homedir.Expand("~/.wo/")
-	if err != nil {
-		return "", err
-	}
+	dir := config.ConfigDir()
 
-	statePath := filepath.Join(woDir, "state.yml")
+	statePath := filepath.Join(dir, "state.yml")
 
 	return statePath, nil
 }
