@@ -18,6 +18,7 @@ var (
 	// Rules
 	toggleRules = []validation.Rule{validation.Required, validation.In("enabled", "disabled")}
 
+	// Utils Schemas
 	editorsSchema = FieldSchema{
 		Key:          "editors",
 		Description:  "",
@@ -118,12 +119,14 @@ var (
 		editorsSchema,
 		spacesSchema,
 	}
+	// Schema of spaceRC (.wospace)
 	SpaceRCSchema = []FieldSchema{
 		defaultsSchema,
 		actionsSchema,
 		flowsSchema,
 		cyclesSchema,
 	}
+	// Schema of workspaceRC (.worc)
 	WorkspaceRCSchema = []FieldSchema{
 		{
 			Key:          "name",
@@ -156,61 +159,3 @@ func genSchemaMap(schema []FieldSchema) map[string]interface{} {
 
 	return m
 }
-
-// configEditorFields = []FieldSchema{
-// 	{
-// 		Key:          "name",
-// 		Description:  "the text editor name",
-// 		Rules:        []validation.Rule{validation.Required, validation.Length(3, 32), is.PrintableASCII},
-// 		DefaultValue: "",
-// 	},
-// 	{
-// 		Key:          "id",
-// 		Description:  "the text editor id",
-// 		Rules:        []validation.Rule{validation.Required, validation.Length(3, 32), is.Alphanumeric},
-// 		DefaultValue: "",
-// 	},
-// 	{
-// 		Key:          "exec_path",
-// 		Description:  "the text editor's executable path",
-// 		Rules:        []validation.Rule{validation.Required},
-// 		DefaultValue: "",
-// 	},
-// }
-
-// configSpaceFields = []FieldSchema{
-// 	{
-// 		Key:          "type",
-// 		Description:  "The Space's type",
-// 		Rules:        []validation.Rule{validation.Required, validation.In("global", "local")},
-// 		DefaultValue: "global",
-// 	},
-// 	{
-// 		Key:          "id",
-// 		Description:  "The Space's name and id",
-// 		Rules:        []validation.Rule{validation.Required, is.PrintableASCII},
-// 		DefaultValue: "",
-// 	},
-// 	{
-// 		Key:          "temp_dir",
-// 		Description:  "the dir where the temporary workspaces saved",
-// 		Rules:        []validation.Rule{validation.Required},
-// 		DefaultValue: "",
-// 	},
-// 	{
-// 		Key:          "root_dir",
-// 		Description:  "the dir where the workspaces saved",
-// 		Rules:        []validation.Rule{validation.Required},
-// 		DefaultValue: "",
-// 	},
-// 	{
-// 		Key:         "workspaces",
-// 		Description: "The Space Workspace",
-// 		Rules: []validation.Rule{validation.Map(
-// 			validation.Key("id", validation.Required, validation.Length(3, 32), is.PrintableASCII),
-// 			validation.Key("path", validation.Required),
-// 			validation.Key("createdAt", validation.Required, is.UTFLetter),
-// 		)},
-// 		DefaultValue: map[string]interface{}{},
-// 	},
-// }
