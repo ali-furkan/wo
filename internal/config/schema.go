@@ -1,6 +1,8 @@
 package config
 
 import (
+	"path/filepath"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
@@ -22,9 +24,17 @@ var (
 		DefaultValue: map[string]interface{}{},
 	}
 	spacesSchema = FieldSchema{
-		Key:          "spaces",
-		Description:  "",
-		DefaultValue: map[string]interface{}{},
+		Key:         "spaces",
+		Description: "",
+		DefaultValue: map[string]interface{}{
+			"global": map[string]interface{}{
+				"type":       "global",
+				"id":         "global",
+				"temp_dir":   filepath.Join(ConfigDir(), "./spaces/global-temp"),
+				"root_dir":   filepath.Join(ConfigDir(), "./spaces/global"),
+				"workspaces": map[string]interface{}{},
+			},
+		},
 	}
 	actionsSchema = FieldSchema{
 		Key:          "actions",
