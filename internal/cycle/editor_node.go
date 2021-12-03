@@ -43,9 +43,7 @@ func scanEditor(ctx *cmdutil.CmdContext) error {
 	if len(ne) != len(editors) {
 		res := make(map[string]map[string]string)
 		for _, editor := range ne {
-			res[editor.Name] = make(map[string]string)
-			res[editor.Name]["id"] = editor.Name
-			res[editor.Name]["exec"] = editor.Exec
+			res[editor.Name] = editor.Map()
 		}
 		err = c.Set("editors", res)
 		if err != nil {
@@ -55,6 +53,10 @@ func scanEditor(ctx *cmdutil.CmdContext) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	if defEditor := c.GetString("defaults.editor"); defEditor == "" {
+		c.Set("defaults.editor", ne[0].ID)
 	}
 
 	return nil

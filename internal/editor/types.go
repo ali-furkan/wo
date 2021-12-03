@@ -17,6 +17,16 @@ var (
 	EditorExecRule = []validation.Rule{validation.Required}
 )
 
+func (e *Editor) Map() map[string]string {
+	m := make(map[string]string)
+
+	m["name"] = e.Name
+	m["id"] = e.ID
+	m["exec"] = e.Exec
+
+	return m
+}
+
 func (e *Editor) Validate() error {
 	return validation.ValidateStruct(e,
 		validation.Field(&e.Name, EditorNameRule...),

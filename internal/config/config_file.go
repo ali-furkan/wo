@@ -100,7 +100,7 @@ func writeConfigFile(filename string, data []byte) error {
 	return ioutil.WriteFile(path, data, 0600)
 }
 
-func parseConfigFile(filename string) (*map[string]interface{}, error) {
+func parseConfigFile(filename string) (map[string]interface{}, error) {
 	data, err := readConfigFile(filename)
 	if err != nil {
 		return nil, err
@@ -113,5 +113,5 @@ func parseConfigFile(filename string) (*map[string]interface{}, error) {
 		return nil, err
 	}
 
-	return &m, nil
+	return m, nil
 }

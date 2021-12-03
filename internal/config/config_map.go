@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/spf13/cast"
 	"gopkg.in/yaml.v2"
 )
 
@@ -78,7 +79,7 @@ func (cm *ConfigMap) Set(field string, val interface{}) error {
 		return err
 	}
 
-	nestedMap := cm.deepSearchMap(cm.root, ks[:len(ks)-1]...)
+	nestedMap, _ := cm.searchMap(cm.root, ks[:len(ks)-1]...)
 
 	nestedMap[lastKey] = val
 	return nil
@@ -106,17 +107,18 @@ func (cm ConfigMap) Map() map[string]interface{} {
 
 func (cm *ConfigMap) validate(val interface{}, field string) error {
 	ks := strings.Split(field, ".")
+	parentKey := ks[0]
 
 	if len(ks) > 2 {
 		return nil
 	}
 
-	schema, err := cm.GetSchema(ks[0])
+	schema, err := cm.GetSchema(parentKey)
 	if err != nil {
 		return fmt.Errorf(ErrConfigValidation, field, err)
 	}
 
-	err = validation.Validate(val, schema.Rules...)
+	err = validation.Validate(cm.root[parentKey], schema.Rules...)
 	if err != nil {
 		return fmt.Errorf(ErrConfigValidation, schema.Key, err)
 	}
@@ -138,8 +140,8 @@ func (cm *ConfigMap) searchMap(m map[string]interface{}, keys ...string) (map[st
 		m3, ok := m2.(map[string]interface{})
 		if !ok {
 			switch m2.(type) {
-			case map[string]interface{}, map[interface{}]interface{}:
-				m3 = make(map[string]interface{})
+			case map[interface{}]interface{}:
+				m3 = cast.ToStringMap(m2)
 				m[k] = m3
 			default:
 				return nil, errors.New(ErrConfigMapInvalidFieldAddr)
@@ -150,30 +152,4 @@ func (cm *ConfigMap) searchMap(m map[string]interface{}, keys ...string) (map[st
 	}
 
 	return m, nil
-}
-
-func (cm *ConfigMap) deepSearchMap(m map[string]interface{}, keys ...string) map[string]interface{} {
-	if len(keys) == 0 {
-		return m
-	}
-
-	for _, k := range keys {
-		m2, ok := m[k]
-		if !ok {
-			m3 := make(map[string]interface{})
-			m[k] = m3
-			m = m3
-			continue
-		}
-
-		m3, ok := m2.(map[string]interface{})
-		if !ok {
-			m3 = make(map[string]interface{})
-			m[k] = m3
-		}
-
-		m = m3
-	}
-
-	return m
 }

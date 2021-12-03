@@ -15,6 +15,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/riywo/loginshell v0.0.0-20200815045211-7d26008be1ab
+	github.com/spf13/cast v1.4.1
 	github.com/spf13/cobra v1.2.1
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 	golang.org/x/sys v0.0.0-20210906170528-6f6e22806c34 // indirect

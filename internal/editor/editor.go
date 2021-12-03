@@ -31,7 +31,7 @@ func Scan() ([]Editor, error) {
 		if err != nil {
 			continue
 		}
-		e = append(e, Editor{Name: name, Exec: path})
+		e = append(e, Editor{Name: name, ID: name, Exec: path})
 	}
 
 	if len(e) == 0 {

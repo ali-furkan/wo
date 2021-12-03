@@ -23,7 +23,7 @@ func NewConfig(source string, schema []FieldSchema) (Config, error) {
 		return nil, err
 	}
 
-	configMap := NewConfigMap(*m, schema)
+	configMap := NewConfigMap(m, schema)
 
 	return &fileConfig{
 		source: source,
